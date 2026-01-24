@@ -5741,6 +5741,84 @@ function Library:Notify(...)
     return Data
 end
 
+function Library:AddFireworkEffect(Parent)
+    local FireworkContainer = New("Frame", {
+        Name = "FireworkContainer",
+        BackgroundTransparency = 1,
+        Size = UDim2.fromScale(1, 1),
+        ZIndex = 1,
+        ClipsDescendants = true,
+        Parent = Parent,
+        Visible = false, -- 默认关闭
+    })
+
+    local function CreateExplosion(startX, startY)
+        local color = Color3.fromHSV(math.random(), 0.8, 1) -- 随机霓虹色
+        for i = 1, 15 do
+            local particle = New("Frame", {
+                BackgroundColor3 = color,
+                BorderSizePixel = 0,
+                Size = UDim2.fromOffset(3, 3),
+                Position = UDim2.fromScale(startX, startY),
+                Parent = FireworkContainer,
+            })
+            New("UICorner", { CornerRadius = UDim.new(1, 0), Parent = particle })
+            
+            local angle = math.rad(math.random(0, 360))
+            local dist = math.random(8, 18) / 100
+            local targetPos = UDim2.fromScale(
+                startX + math.cos(angle) * dist,
+                startY + math.sin(angle) * dist + 0.05
+            )
+            
+            TweenService:Create(particle, TweenInfo.new(1, Enum.EasingStyle.QuartOut), {
+                Position = targetPos,
+                BackgroundTransparency = 1,
+                Size = UDim2.fromOffset(0, 0)
+            }):Play()
+            
+            task.delay(1, function() particle:Destroy() end)
+        end
+    end
+
+    local running = true
+    task.spawn(function()
+        while running do
+            task.wait(math.random(2, 4))
+            if not FireworkContainer.Visible then continue end
+            
+            local x = 0.2 + math.random() * 0.6
+            local y = 0.2 + math.random() * 0.3
+            
+            local rocket = New("Frame", {
+                BackgroundColor3 = Color3.new(1, 1, 1),
+                Size = UDim2.fromOffset(3, 3),
+                Position = UDim2.fromScale(x, 1.1),
+                Parent = FireworkContainer,
+            })
+            New("UICorner", { CornerRadius = UDim.new(1, 0), Parent = rocket })
+            
+            local launch = TweenService:Create(rocket, TweenInfo.new(1.2, Enum.EasingStyle.QuadOut), {
+                Position = UDim2.fromScale(x, y)
+            })
+            
+            launch.Completed:Connect(function()
+                rocket:Destroy()
+                CreateExplosion(x, y)
+            end)
+            launch:Play()
+        end
+    end)
+
+    return {
+        SetVisible = function(state) FireworkContainer.Visible = state end,
+        Destroy = function()
+            running = false
+            FireworkContainer:Destroy()
+        end
+    }
+end
+
 function Library:CreateWindow(WindowInfo)
     WindowInfo = Library:Validate(WindowInfo, Templates.Window)
     local ViewportSize: Vector2 = workspace.CurrentCamera.ViewportSize
@@ -7487,7 +7565,32 @@ UIGradient.Parent = WindowTitle
     Library:GiveSignal(UserInputService.WindowFocusReleased:Connect(function()
         Library.IsRobloxFocused = false
     end))
+-- 1. 创建背景容器
+    local BackgroundContainer = New("Frame", {
+        Name = "BackgroundContainer",
+        BackgroundTransparency = 1,
+        Size = UDim2.fromScale(1, 1),
+        Parent = MainFrame,
+        ZIndex = 0,
+    })
+    
+    -- 2. 初始化烟花
+    local FireworkEffect = Library:AddFireworkEffect(BackgroundContainer)
+    
+    -- 3. 将开关方法绑定到 Window 对象
+    Window.SetFireworkVisible = function(visible)
+        if FireworkEffect then
+            FireworkEffect.SetVisible(visible)
+        end
+    end
 
+    -- 4. 确保在卸载时销毁
+    Library:GiveSignal(UserInputService.InputBegan:Connect(function(Input)
+        -- 这里是你原有的快捷键逻辑...
+    end))
+
+    return Window
+end -- CreateWindow 结束
     return Window
 end
 
@@ -7518,90 +7621,3 @@ Library:GiveSignal(Teams.ChildRemoved:Connect(OnTeamChange))
 
 getgenv().Library = Library
 return Library
-function Library:AddFireworkEffect(Parent: GuiObject, MaxFireworks: number?, ParticleCount: number?)
-    MaxFireworks = MaxFireworks or 3
-    ParticleCount = ParticleCount or 20
-    
-    local Fireworks = {}
-    local FireworkContainer = New("Frame", {
-        BackgroundTransparency = 1,
-        Size = UDim2.fromScale(1, 1),
-        ZIndex = 1,
-        ClipsDescendants = true,
-        Parent = Parent,
-    })
-
-    local function CreateParticle(pos, color)
-        local particle = New("Frame", {
-            BackgroundColor3 = color,
-            Size = UDim2.fromOffset(3, 3),
-            Position = UDim2.fromScale(pos.X, pos.Y),
-            BorderSizePixel = 0,
-            Parent = FireworkContainer,
-        })
-        New("UICorner", { CornerRadius = UDim.new(1, 0), Parent = particle })
-        
-        local angle = math.rad(math.random(0, 360))
-        local force = math.random(5, 15) / 1000
-        return {
-            Instance = particle,
-            Vel = Vector2.new(math.cos(angle) * force, math.sin(angle) * force),
-            Life = 1.0,
-            Decay = math.random(15, 30) / 1000
-        }
-    end
-
-    local function LaunchFirework()
-        local startX = 0.1 + math.random() * 0.8
-        local targetY = 0.2 + math.random() * 0.3
-        local color = Color3.fromHSV(math.random(), 0.8, 1)
-        
-        local rocket = New("Frame", {
-            BackgroundColor3 = color,
-            Size = UDim2.fromOffset(4, 4),
-            Position = UDim2.fromScale(startX, 1.1),
-            BorderSizePixel = 0,
-            Parent = FireworkContainer,
-        })
-
-        local tween = TweenService:Create(rocket, TweenInfo.new(1.2, Enum.EasingStyle.QuadOut), {
-            Position = UDim2.fromScale(startX, targetY)
-        })
-        
-        tween.Completed:Connect(function()
-            for i = 1, ParticleCount do
-                table.insert(Fireworks, CreateParticle(Vector2.new(startX, targetY), color))
-            end
-            rocket:Destroy()
-        end)
-        tween:Play()
-    end
-
-    local Connection = RunService.RenderStepped:Connect(function(dt)
-        if #Fireworks == 0 and math.random() < 0.02 then
-            LaunchFirework()
-        end
-
-        for i = #Fireworks, 1, -1 do
-            local p = Fireworks[i]
-            p.Life -= p.Decay
-            if p.Life <= 0 then
-                p.Instance:Destroy()
-                table.remove(Fireworks, i)
-            else
-                local pos = p.Instance.Position
-                p.Vel = p.Vel + Vector2.new(0, 0.0005) -- 重力感
-                p.Instance.Position = UDim2.fromScale(pos.X.Scale + p.Vel.X, pos.Y.Scale + p.Vel.Y)
-                p.Instance.BackgroundTransparency = 1 - p.Life
-            end
-        end
-    end)
-
-    return {
-        SetVisible = function(visible) FireworkContainer.Visible = visible end,
-        Destroy = function()
-            Connection:Disconnect()
-            FireworkContainer:Destroy()
-        end
-    }
-end
