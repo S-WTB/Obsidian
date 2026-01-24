@@ -7518,3 +7518,99 @@ Library:GiveSignal(Teams.ChildRemoved:Connect(OnTeamChange))
 
 getgenv().Library = Library
 return Library
+
+-- ==========================================
+-- 烟花模块补丁 (直接放在文件末尾)
+-- ==========================================
+
+-- 1. 定义烟花生成函数
+function Library:AddFireworkEffect(Parent)
+    local FireworkContainer = Instance.new("Frame")
+    FireworkContainer.Name = "FireworkContainer"
+    FireworkContainer.BackgroundTransparency = 1
+    FireworkContainer.Size = UDim2.fromScale(1, 1)
+    FireworkContainer.ZIndex = 10 -- 确保在顶层
+    FireworkContainer.ClipsDescendants = true
+    FireworkContainer.Visible = false
+    FireworkContainer.Parent = Parent
+
+    local function Explode(x, y)
+        local color = Color3.fromHSV(math.random(), 0.8, 1)
+        for i = 1, 20 do
+            local p = Instance.new("Frame")
+            p.BackgroundColor3 = color
+            p.BorderSizePixel = 0
+            p.Size = UDim2.fromOffset(3, 3)
+            p.Position = UDim2.fromScale(x, y)
+            p.Parent = FireworkContainer
+            
+            local corner = Instance.new("UICorner")
+            corner.CornerRadius = UDim.new(1, 0)
+            corner.Parent = p
+            
+            local angle = math.rad(math.random(0, 360))
+            local dist = math.random(8, 20) / 100
+            game:GetService("TweenService"):Create(p, TweenInfo.new(1, Enum.EasingStyle.QuartOut), {
+                Position = UDim2.fromScale(x + math.cos(angle) * dist, y + math.sin(angle) * dist + 0.08),
+                BackgroundTransparency = 1,
+                Size = UDim2.fromOffset(0,0)
+            }):Play()
+            
+            task.delay(1, function() p:Destroy() end)
+        end
+    end
+
+    local running = true
+    task.spawn(function()
+        while running do
+            task.wait(math.random(2, 4))
+            if not FireworkContainer or not FireworkContainer.Parent then break end
+            if not FireworkContainer.Visible then continue end
+            
+            local x = 0.2 + math.random() * 0.6
+            local y = 0.2 + math.random() * 0.3
+            
+            local rocket = Instance.new("Frame")
+            rocket.BackgroundColor3 = Color3.new(1, 1, 1)
+            rocket.Size = UDim2.fromOffset(4, 4)
+            rocket.Position = UDim2.fromScale(x, 1.1)
+            rocket.Parent = FireworkContainer
+            Instance.new("UICorner", rocket).CornerRadius = UDim.new(1, 0)
+            
+            local launch = game:GetService("TweenService"):Create(rocket, TweenInfo.new(1.2, Enum.EasingStyle.QuadOut), {
+                Position = UDim2.fromScale(x, y)
+            })
+            
+            launch.Completed:Connect(function()
+                rocket:Destroy()
+                Explode(x, y)
+            end)
+            launch:Play()
+        end
+    end)
+
+    return {
+        SetVisible = function(state) FireworkContainer.Visible = state end,
+        Instance = FireworkContainer
+    }
+end
+
+-- 2. 自动注入逻辑：当主窗口打开时自动挂载烟花
+local oldCreateWindow = Library.CreateWindow
+Library.CreateWindow = function(self, ...)
+    local Window = oldCreateWindow(self, ...) -- 先运行原有的创建窗口代码
+    
+    -- 尝试在窗口里寻找背景容器或主面板
+    local MainFrame = Window.MainFrame or (Library.ScreenGui and Library.ScreenGui:FindFirstChildWhichIsA("Frame"))
+    
+    if MainFrame then
+        local FW = Library:AddFireworkEffect(MainFrame)
+        
+        -- 给返回的 Window 对象增加控制方法
+        Window.SetFireworkVisible = function(bool)
+            FW.SetVisible(bool)
+        end
+    end
+    
+    return Window
+end
