@@ -6769,134 +6769,369 @@ function Library:CreateWindow(WindowInfo)
         
         
 
---// Target Distance Display \\--
-local DistanceFrame = New("Frame", {
+--// Note Sticky Frame \\--
+local NoteFrame = New("Frame", {
     BackgroundTransparency = 0,
-    BackgroundColor3 = Color3.fromRGB(40, 40, 30),
+    BackgroundColor3 = Color3.fromRGB(45, 40, 35),
     Size = UDim2.new(0.3, 0, 0, 40),
     AnchorPoint = Vector2.new(0, 1),
     Position = UDim2.new(0, 0, 1, -21),
     ZIndex = 2,
     Parent = MainFrame,
+    ClipsDescendants = true,
 })
 New("UICorner", {
     CornerRadius = UDim.new(0, Library.CornerRadius - 1),
-    Parent = DistanceFrame,
+    Parent = NoteFrame,
 })
 
-local TargetIcon = New("TextLabel", {
+-- 便签图标
+local NoteIcon = New("TextButton", {
     BackgroundTransparency = 1,
     Size = UDim2.fromOffset(32, 32),
     Position = UDim2.fromOffset(4, 4),
-    Text = "🎯",
+    Text = "📝",
     TextSize = 18,
-    TextColor3 = Color3.fromRGB(255, 100, 100),
+    TextColor3 = Color3.fromRGB(255, 220, 180),
     ZIndex = 3,
-    Parent = DistanceFrame,
+    Parent = NoteFrame,
 })
 
-local DistanceLabel = New("TextLabel", {
+-- 笔记预览
+local NotePreview = New("TextLabel", {
     BackgroundTransparency = 1,
-    Size = UDim2.new(1, -40, 0.5, 0),
-    Position = UDim2.fromOffset(40, 4),
-    Text = "最近目标",
+    Size = UDim2.new(1, -40, 1, 0),
+    Position = UDim2.fromOffset(40, 0),
+    Text = "点击添加笔记...",
     TextSize = 12,
-    Font = Enum.Font.GothamBold,
-    TextColor3 = Color3.fromRGB(255, 255, 255),
-    TextXAlignment = Enum.TextXAlignment.Left,
-    ZIndex = 3,
-    Parent = DistanceFrame,
-})
-
-local TargetNameLabel = New("TextLabel", {
-    BackgroundTransparency = 1,
-    Size = UDim2.new(1, -40, 0.5, 0),
-    Position = UDim2.fromOffset(40, 20),
-    Text = "无目标",
-    TextSize = 10,
-    TextColor3 = Color3.fromRGB(200, 200, 200),
+    Font = Enum.Font.Gotham,
+    TextColor3 = Color3.fromRGB(220, 220, 200),
     TextXAlignment = Enum.TextXAlignment.Left,
     TextTruncate = Enum.TextTruncate.AtEnd,
+    TextWrapped = false,
     ZIndex = 3,
-    Parent = DistanceFrame,
+    Parent = NoteFrame,
 })
 
--- 查找最近的目标
-local function FindNearestTarget()
-    local player = game.Players.LocalPlayer
-    local character = player.Character
-    if not character then return nil, math.huge end
+-- 笔记内容（完整）
+local noteContent = "点击添加笔记..."
+local noteLastEdited = os.time()
+local isExpanded = false
+local autoSaveTimer = 0
+
+-- 展开的笔记编辑器
+local ExpandedNoteFrame = New("Frame", {
+    BackgroundColor3 = Color3.fromRGB(50, 45, 40),
+    BorderColor3 = Color3.fromRGB(80, 75, 70),
+    BorderSizePixel = 2,
+    Size = UDim2.new(0.8, 0, 0.6, 0),
+    Position = UDim2.new(0.1, 0, 0.2, 0),
+    Visible = false,
+    Active = true,
+    ZIndex = 10,
+    Parent = MainFrame,
+})
+New("UICorner", {
+    CornerRadius = UDim.new(0, 8),
+    Parent = ExpandedNoteFrame,
+})
+
+-- 标题栏
+local NoteTitleBar = New("Frame", {
+    BackgroundColor3 = Color3.fromRGB(60, 55, 50),
+    Size = UDim2.new(1, 0, 0, 30),
+    ZIndex = 11,
+    Parent = ExpandedNoteFrame,
+})
+New("UICorner", {
+    CornerRadius = UDim.new(0, 8, 0, 0),
+    Parent = NoteTitleBar,
+})
+
+local NoteTitle = New("TextLabel", {
+    BackgroundTransparency = 1,
+    Size = UDim2.new(1, -60, 1, 0),
+    Position = UDim2.fromOffset(10, 0),
+    Text = "我的笔记",
+    TextSize = 14,
+    Font = Enum.Font.GothamBold,
+    TextColor3 = Color3.fromRGB(255, 220, 180),
+    TextXAlignment = Enum.TextXAlignment.Left,
+    ZIndex = 12,
+    Parent = NoteTitleBar,
+})
+
+-- 关闭按钮
+local CloseNoteButton = New("TextButton", {
+    BackgroundColor3 = Color3.fromRGB(80, 75, 70),
+    Size = UDim2.fromOffset(20, 20),
+    Position = UDim2.new(1, -25, 0.5, -10),
+    AnchorPoint = Vector2.new(1, 0.5),
+    Text = "×",
+    TextSize = 16,
+    Font = Enum.Font.GothamBold,
+    TextColor3 = Color3.fromRGB(255, 255, 255),
+    ZIndex = 12,
+    Parent = NoteTitleBar,
+})
+New("UICorner", {
+    CornerRadius = UDim.new(1, 0),
+    Parent = CloseNoteButton,
+})
+
+-- 笔记编辑区域
+local NoteTextArea = New("ScrollingFrame", {
+    BackgroundTransparency = 1,
+    Size = UDim2.new(1, -20, 1, -50),
+    Position = UDim2.fromOffset(10, 40),
+    CanvasSize = UDim2.new(0, 0, 0, 0),
+    ScrollBarThickness = 4,
+    ZIndex = 11,
+    Parent = ExpandedNoteFrame,
+})
+
+local NoteTextBox = New("TextBox", {
+    BackgroundTransparency = 1,
+    Size = UDim2.new(1, 0, 1, 0),
+    Text = noteContent,
+    TextSize = 12,
+    Font = Enum.Font.Gotham,
+    TextColor3 = Color3.fromRGB(220, 220, 200),
+    TextXAlignment = Enum.TextXAlignment.Left,
+    TextYAlignment = Enum.TextYAlignment.Top,
+    TextWrapped = true,
+    MultiLine = true,
+    ClearTextOnFocus = false,
+    ZIndex = 12,
+    Parent = NoteTextArea,
+})
+
+-- 底部工具栏
+local NoteToolbar = New("Frame", {
+    BackgroundColor3 = Color3.fromRGB(60, 55, 50),
+    Size = UDim2.new(1, 0, 0, 30),
+    Position = UDim2.new(0, 0, 1, -30),
+    ZIndex = 11,
+    Parent = ExpandedNoteFrame,
+})
+New("UICorner", {
+    CornerRadius = UDim.new(0, 0, 8, 0),
+    Parent = NoteToolbar,
+})
+
+-- 字数统计
+local WordCountLabel = New("TextLabel", {
+    BackgroundTransparency = 1,
+    Size = UDim2.new(0.5, 0, 1, 0),
+    Position = UDim2.fromOffset(10, 0),
+    Text = "字数: 0",
+    TextSize = 11,
+    TextColor3 = Color3.fromRGB(180, 180, 160),
+    TextXAlignment = Enum.TextXAlignment.Left,
+    ZIndex = 12,
+    Parent = NoteToolbar,
+})
+
+-- 最后编辑时间
+local LastEditLabel = New("TextLabel", {
+    BackgroundTransparency = 1,
+    Size = UDim2.new(0.5, -10, 1, 0),
+    Position = UDim2.new(0.5, 0, 0, 0),
+    Text = "刚刚",
+    TextSize = 11,
+    TextColor3 = Color3.fromRGB(180, 180, 160),
+    TextXAlignment = Enum.TextXAlignment.Right,
+    ZIndex = 12,
+    Parent = NoteToolbar,
+})
+
+-- 保存按钮
+local SaveNoteButton = New("TextButton", {
+    BackgroundColor3 = Color3.fromRGB(80, 140, 80),
+    Size = UDim2.fromOffset(60, 22),
+    Position = UDim2.new(1, -70, 0.5, -11),
+    AnchorPoint = Vector2.new(1, 0.5),
+    Text = "保存",
+    TextSize = 11,
+    Font = Enum.Font.GothamMedium,
+    TextColor3 = Color3.fromRGB(255, 255, 255),
+    ZIndex = 12,
+    Parent = NoteToolbar,
+})
+New("UICorner", {
+    CornerRadius = UDim.new(0, 4),
+    Parent = SaveNoteButton,
+})
+
+-- 清除按钮
+local ClearNoteButton = New("TextButton", {
+    BackgroundColor3 = Color3.fromRGB(140, 80, 80),
+    Size = UDim2.fromOffset(60, 22),
+    Position = UDim2.new(1, -140, 0.5, -11),
+    AnchorPoint = Vector2.new(1, 0.5),
+    Text = "清除",
+    TextSize = 11,
+    Font = Enum.Font.GothamMedium,
+    TextColor3 = Color3.fromRGB(255, 255, 255),
+    ZIndex = 12,
+    Parent = NoteToolbar,
+})
+New("UICorner", {
+    CornerRadius = UDim.new(0, 4),
+    Parent = ClearNoteButton,
+})
+
+-- 更新预览
+local function UpdateNotePreview()
+    local preview = noteContent
+    if #preview > 50 then
+        preview = preview:sub(1, 47) .. "..."
+    end
+    NotePreview.Text = preview
     
-    local root = character:FindFirstChild("HumanoidRootPart") or character:FindFirstChild("Torso")
-    if not root then return nil, math.huge end
+    -- 更新最后编辑时间显示
+    local now = os.time()
+    local diff = now - noteLastEdited
+    local timeText
     
-    local nearestPlayer = nil
-    local nearestDistance = math.huge
-    
-    for _, otherPlayer in pairs(game.Players:GetPlayers()) do
-        if otherPlayer ~= player and otherPlayer.Character then
-            local otherRoot = otherPlayer.Character:FindFirstChild("HumanoidRootPart") or otherPlayer.Character:FindFirstChild("Torso")
-            if otherRoot then
-                local distance = (root.Position - otherRoot.Position).Magnitude
-                if distance < nearestDistance then
-                    nearestDistance = distance
-                    nearestPlayer = otherPlayer
-                end
-            end
-        end
+    if diff < 60 then
+        timeText = "刚刚"
+    elseif diff < 3600 then
+        local mins = math.floor(diff / 60)
+        timeText = mins .. "分钟前"
+    elseif diff < 86400 then
+        local hours = math.floor(diff / 3600)
+        timeText = hours .. "小时前"
+    else
+        local days = math.floor(diff / 86400)
+        timeText = days .. "天前"
     end
     
-    return nearestPlayer, nearestDistance
+    LastEditLabel.Text = timeText
+    
+    -- 更新字数
+    local words = #noteContent:gsub("%s+", "")
+    WordCountLabel.Text = "字数: " .. words
 end
 
--- 实时更新距离
-spawn(function()
-    while wait(0.2) do
-        local target, distance = FindNearestTarget()
+-- 更新文本框尺寸
+local function UpdateTextAreaSize()
+    local textHeight = NoteTextBox.TextBounds.Y
+    NoteTextArea.CanvasSize = UDim2.new(0, 0, 0, textHeight + 20)
+end
+
+-- 展开/收起笔记编辑器
+local function ToggleNoteEditor()
+    isExpanded = not isExpanded
+    ExpandedNoteFrame.Visible = isExpanded
+    
+    if isExpanded then
+        NoteTextBox.Text = noteContent
+        NoteTextBox:CaptureFocus()
+        UpdateTextAreaSize()
+        UpdateNotePreview()
         
-        if target and distance < 1000 then -- 只显示1000距离内的目标
-            DistanceLabel.Text = string.format("%.1f studs", distance)
-            TargetNameLabel.Text = target.Name
-            
-            -- 根据距离改变颜色
-            if distance < 10 then
-                DistanceLabel.TextColor3 = Color3.fromRGB(255, 50, 50) -- 红色：非常近
-                TargetIcon.TextColor3 = Color3.fromRGB(255, 50, 50)
-            elseif distance < 30 then
-                DistanceLabel.TextColor3 = Color3.fromRGB(255, 150, 50) -- 橙色：近距离
-                TargetIcon.TextColor3 = Color3.fromRGB(255, 150, 50)
-            elseif distance < 100 then
-                DistanceLabel.TextColor3 = Color3.fromRGB(255, 255, 50) -- 黄色：中距离
-                TargetIcon.TextColor3 = Color3.fromRGB(255, 255, 50)
-            else
-                DistanceLabel.TextColor3 = Color3.fromRGB(100, 255, 100) -- 绿色：远距离
-                TargetIcon.TextColor3 = Color3.fromRGB(100, 255, 100)
-            end
-        else
-            DistanceLabel.Text = "无目标"
-            DistanceLabel.TextColor3 = Color3.fromRGB(150, 150, 150)
-            TargetNameLabel.Text = "点击刷新"
-            TargetIcon.TextColor3 = Color3.fromRGB(150, 150, 150)
-        end
+        -- 展开时动画
+        ExpandedNoteFrame.Size = UDim2.new(0.8, 0, 0, 30)
+        game.TweenService:Create(ExpandedNoteFrame, TweenInfo.new(0.3), {
+            Size = UDim2.new(0.8, 0, 0.6, 0)
+        }):Play()
+    else
+        -- 自动保存当前内容
+        noteContent = NoteTextBox.Text
+        noteLastEdited = os.time()
+        UpdateNotePreview()
+    end
+end
+
+-- 保存笔记
+local function SaveNote()
+    noteContent = NoteTextBox.Text
+    noteLastEdited = os.time()
+    UpdateNotePreview()
+    
+    -- 保存到DataStore（如果需要持久化）
+    pcall(function()
+        -- 这里可以添加DataStore保存逻辑
+        -- local DataStoreService = game:GetService("DataStoreService")
+        -- local notesStore = DataStoreService:GetDataStore("UserNotes")
+        -- notesStore:SetAsync(tostring(game.Players.LocalPlayer.UserId), noteContent)
+    end)
+    
+    -- 保存成功提示
+    SaveNoteButton.Text = "✓ 已保存"
+    wait(1)
+    SaveNoteButton.Text = "保存"
+end
+
+-- 清除笔记
+local function ClearNote()
+    noteContent = ""
+    NoteTextBox.Text = ""
+    noteLastEdited = os.time()
+    UpdateNotePreview()
+    UpdateTextAreaSize()
+end
+
+-- 事件绑定
+NoteIcon.MouseButton1Click:Connect(ToggleNoteEditor)
+NoteFrame.MouseButton1Click:Connect(ToggleNoteEditor)
+CloseNoteButton.MouseButton1Click:Connect(ToggleNoteEditor)
+SaveNoteButton.MouseButton1Click:Connect(SaveNote)
+ClearNoteButton.MouseButton1Click:Connect(ClearNote)
+
+-- 文本框内容变化时更新
+NoteTextBox:GetPropertyChangedSignal("Text"):Connect(function()
+    UpdateTextAreaSize()
+    
+    -- 自动保存计时器
+    autoSaveTimer = autoSaveTimer + 1
+    if autoSaveTimer >= 30 then -- 每30次变化自动保存
+        SaveNote()
+        autoSaveTimer = 0
     end
 end)
 
--- 点击锁定目标
-local lockedTarget = nil
-DistanceFrame.MouseButton1Click:Connect(function()
-    local target, distance = FindNearestTarget()
-    
-    if target and distance < 1000 then
-        if lockedTarget == target then
-            lockedTarget = nil -- 解锁
-            TargetIcon.Text = "🎯"
-            TargetNameLabel.Text = target.Name .. " (已解锁)"
-        else
-            lockedTarget = target -- 锁定
-            TargetIcon.Text = "🔒"
-            TargetNameLabel.Text = target.Name .. " (已锁定)"
-            DistanceLabel.TextColor3 = Color3.fromRGB(255, 100, 255) -- 紫色表示锁定
+-- 点击外部关闭
+local function HandleOutsideClick(input)
+    if isExpanded and input.UserInputType == Enum.UserInputType.MouseButton1 then
+        local mousePos = input.Position
+        local framePos = ExpandedNoteFrame.AbsolutePosition
+        local frameSize = ExpandedNoteFrame.AbsoluteSize
+        
+        -- 检查是否点击在外部
+        if mousePos.X < framePos.X or mousePos.X > framePos.X + frameSize.X or
+           mousePos.Y < framePos.Y or mousePos.Y > framePos.Y + frameSize.Y then
+            ToggleNoteEditor()
         end
+    end
+end
+
+game:GetService("UserInputService").InputBegan:Connect(HandleOutsideClick)
+
+-- 加载保存的笔记（如果有）
+spawn(function()
+    wait(2) -- 等待游戏加载
+    pcall(function()
+        -- 这里可以添加从DataStore加载的逻辑
+        -- local DataStoreService = game:GetService("DataStoreService")
+        -- local notesStore = DataStoreService:GetDataStore("UserNotes")
+        -- local savedNote = notesStore:GetAsync(tostring(game.Players.LocalPlayer.UserId))
+        -- if savedNote then
+        --     noteContent = savedNote
+        --     UpdateNotePreview()
+        -- end
+    end)
+end)
+
+-- 初始化
+UpdateNotePreview()
+
+-- 可选的：添加快捷键（Ctrl+N 打开笔记）
+game:GetService("UserInputService").InputBegan:Connect(function(input, processed)
+    if not processed and input.KeyCode == Enum.KeyCode.N and 
+       game:GetService("UserInputService"):IsKeyDown(Enum.KeyCode.LeftControl) then
+        ToggleNoteEditor()
     end
 end)
 
