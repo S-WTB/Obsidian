@@ -6771,7 +6771,7 @@ function Library:CreateWindow(WindowInfo)
 --// Player Info Frame \\--
 local PlayerInfoFrame = New("Frame", {
     BackgroundTransparency = 0,
-    BackgroundColor3 = "BackgroundColor",
+    BackgroundColor3 = Color3.fromRGB(180, 40, 40), -- 春节红色背景
     Size = UDim2.new(0.3, 0, 0, 40),
     AnchorPoint = Vector2.new(0, 1),
     Position = UDim2.new(0, 0, 1, -21),
@@ -6783,14 +6783,17 @@ New("UICorner", {
     Parent = PlayerInfoFrame,
 })
 
-local BlockerButton = New("TextButton", {
+-- 添加春节纹理背景
+local SpringTexture = New("ImageLabel", {
     BackgroundTransparency = 1,
     Size = UDim2.new(1, 0, 1, 0),
-    Text = "",
+    Image = "rbxassetid://15213430966", -- 春节纹理
+    ImageTransparency = 0.2,
     ZIndex = 2,
     Parent = PlayerInfoFrame,
 })
 
+-- 获取玩家头像
 local avatarUrl = "rbxassetid://0"
 pcall(function()
     avatarUrl = game.Players:GetUserThumbnailAsync(
@@ -6800,23 +6803,27 @@ pcall(function()
     )
 end)
 
+-- 头像框（带金色边框效果）
 local AvatarFrame = New("Frame", {
-    BackgroundTransparency = 1,
-    Size = UDim2.fromOffset(32, 32),
-    Position = UDim2.fromOffset(12, 4),
+    BackgroundTransparency = 0,
+    BackgroundColor3 = Color3.fromRGB(255, 215, 0), -- 金色边框
+    Size = UDim2.fromOffset(34, 34), -- 比头像大2像素作为边框
+    Position = UDim2.fromOffset(10, 3),
     ZIndex = 3,
     Parent = PlayerInfoFrame,
 })
+New("UICorner", {
+    CornerRadius = UDim.new(1, 0),
+    Parent = AvatarFrame,
+})
 
 local AvatarImage = New("ImageLabel", {
-    BackgroundTransparency = 0,
-    BackgroundColor3 = Color3.fromRGB(181, 181, 181),
-    Size = UDim2.fromOffset(32, 32),
-    Position = UDim2.fromOffset(0, 0),
-    Image = "",
+    BackgroundTransparency = 1,
+    Size = UDim2.new(1, -2, 1, -2), -- 比外框小2像素
+    Position = UDim2.new(0, 1, 0, 1),
+    Image = avatarUrl,
     ImageColor3 = Color3.fromRGB(255, 255, 255),
-    ImageTransparency = 1,
-    ZIndex = 3,
+    ZIndex = 4,
     Parent = AvatarFrame,
 })
 New("UICorner", {
@@ -6824,163 +6831,106 @@ New("UICorner", {
     Parent = AvatarImage,
 })
 
--- 添加春节装饰背景
-local SpringFestivalBG = New("ImageLabel", {
-    BackgroundTransparency = 1,
-    Size = UDim2.new(1, 0, 1, 0),
-    Image = "rbxassetid://15213430966", -- 春节红色背景图案
-    ScaleType = Enum.ScaleType.Crop,
-    ImageTransparency = 0.3,
-    ZIndex = 1,
-    Parent = PlayerInfoFrame,
-})
-
--- 显示名称标签（春节红色）
+-- 显示名称（春节金色）
 local DisplayNameLabel = New("TextLabel", {
     BackgroundTransparency = 1,
     Size = UDim2.new(0, 80, 0, 16),
-    Position = UDim2.fromOffset(50, 4),
+    Position = UDim2.fromOffset(52, 4),
     Text = game.Players.LocalPlayer.DisplayName,
     Font = Enum.Font.GothamBold,
     TextSize = 12,
-    TextColor3 = Color3.fromRGB(220, 53, 69), -- 春节红
+    TextColor3 = Color3.fromRGB(255, 215, 0), -- 金色
     TextXAlignment = Enum.TextXAlignment.Left,
     ZIndex = 3,
-    Visible = false,
     Parent = PlayerInfoFrame,
 })
 
--- 用户名标签（金色）
+-- 用户名（白色）
 local UsernameLabel = New("TextLabel", {
     BackgroundTransparency = 1,
     Size = UDim2.new(0, 80, 0, 12),
-    Position = UDim2.fromOffset(50, 20),
+    Position = UDim2.fromOffset(52, 20),
     Text = "@" .. game.Players.LocalPlayer.Name,
     Font = Enum.Font.Gotham,
     TextSize = 10,
-    TextColor3 = Color3.fromRGB(255, 215, 0), -- 金色
+    TextColor3 = Color3.fromRGB(255, 255, 255), -- 白色
     TextXAlignment = Enum.TextXAlignment.Left,
     ZIndex = 3,
-    Visible = false,
     Parent = PlayerInfoFrame,
 })
 
--- 春节专属标签
-local SpringFestivalLabel = New("TextLabel", {
-    BackgroundTransparency = 1,
-    Size = UDim2.new(0, 80, 0, 12),
-    Position = UDim2.fromOffset(50, 14),
-    Text = "🐉 龙年大吉 🎉",
-    Font = Enum.Font.GothamBold,
-    TextSize = 10,
-    TextColor3 = Color3.fromRGB(255, 215, 0), -- 金色
-    TextXAlignment = Enum.TextXAlignment.Left,
-    ZIndex = 3,
-    Visible = true,
-    Parent = PlayerInfoFrame,
-})
-
--- 添加春节小装饰（福字）
-local FuCharacter = New("TextLabel", {
+-- 春节图标装饰（龙年）
+local DragonIcon = New("TextLabel", {
     BackgroundTransparency = 1,
     Size = UDim2.fromOffset(20, 20),
-    Position = UDim2.fromOffset(0, 0),
-    Text = "福",
-    Font = Enum.Font.GothamBold,
-    TextSize = 18,
-    TextColor3 = Color3.fromRGB(220, 53, 69), -- 春节红
-    ZIndex = 2,
-    Visible = true,
+    Position = UDim2.new(1, -25, 0.5, -10),
+    Text = "🐉",
+    Font = Enum.Font.SourceSans,
+    TextSize = 16,
+    TextColor3 = Color3.fromRGB(255, 215, 0),
+    ZIndex = 3,
     Parent = PlayerInfoFrame,
 })
 
--- 添加红包装饰
-local RedPacket = New("ImageLabel", {
+-- 底部红色装饰条
+local DecorationBar = New("Frame", {
+    BackgroundColor3 = Color3.fromRGB(255, 215, 0), -- 金色
+    Size = UDim2.new(1, 0, 0, 2),
+    Position = UDim2.new(0, 0, 1, -2),
+    ZIndex = 3,
+    Parent = PlayerInfoFrame,
+})
+
+-- 春节祝福语（小标签）
+local BlessingLabel = New("TextLabel", {
     BackgroundTransparency = 1,
-    Size = UDim2.fromOffset(24, 24),
-    Position = UDim2.new(1, -30, 0, 8),
-    Image = "rbxassetid://15213431987", -- 红包图标
-    ZIndex = 2,
-    Visible = true,
+    Size = UDim2.new(1, -100, 0, 12),
+    Position = UDim2.new(0, 140, 0.5, -6),
+    Text = "龙年大吉 • 万事如意",
+    Font = Enum.Font.Gotham,
+    TextSize = 9,
+    TextColor3 = Color3.fromRGB(255, 255, 255),
+    TextXAlignment = Enum.TextXAlignment.Left,
+    ZIndex = 3,
     Parent = PlayerInfoFrame,
 })
 
-local isInfoHidden = true
-
--- 点击切换时添加春节特效
-BlockerButton.MouseButton1Click:Connect(function()
-    isInfoHidden = not isInfoHidden
-    if isInfoHidden then
-        -- 隐藏状态：显示春节主题
-        AvatarImage.Image = ""
-        AvatarImage.BackgroundColor3 = Color3.fromRGB(181, 181, 181)
-        AvatarImage.BackgroundTransparency = 0
-        AvatarImage.ImageTransparency = 1
-        
-        -- 春节装饰
-        DisplayNameLabel.Visible = false
-        UsernameLabel.Visible = false
-        SpringFestivalLabel.Visible = true
-        SpringFestivalLabel.Text = "🐉 龙年大吉 🎉"
-        FuCharacter.Visible = true
-        RedPacket.Visible = true
-        
-        -- 春节特效：闪烁红包
-        spawn(function()
-            for i = 1, 3 do
-                RedPacket.ImageTransparency = 0.3
-                wait(0.1)
-                RedPacket.ImageTransparency = 0
-                wait(0.1)
-            end
-        end)
-    else
-        -- 显示状态：显示玩家信息（带春节色彩）
-        AvatarImage.Image = avatarUrl
-        AvatarImage.BackgroundTransparency = 1
-        AvatarImage.ImageColor3 = Color3.fromRGB(255, 255, 255)
-        AvatarImage.ImageTransparency = 0
-        
-        -- 显示玩家信息
-        DisplayNameLabel.Visible = true
-        UsernameLabel.Visible = true
-        SpringFestivalLabel.Visible = false
-        FuCharacter.Visible = false
-        RedPacket.Visible = false
-        
-        -- 春节祝福语随机显示
-        local blessings = {
-            "🎊 恭喜发财 🎊",
-            "🧧 红包拿来 🧧",
-            "🐲 龙马精神 🐲",
-            "🎇 新年快乐 🎇"
-        }
-        local randomBlessing = blessings[math.random(1, #blessings)]
-        SpringFestivalLabel.Text = randomBlessing
-    end
+-- 添加动态效果：祝福语轮换
+spawn(function()
+    local blessings = {
+        "龙年大吉 • 万事如意",
+        "恭喜发财 • 红包拿来",
+        "龙马精神 • 福气满满",
+        "新年快乐 • 阖家幸福",
+        "财源广进 • 好运连连"
+    }
     
-    -- 添加点击音效（可选）
-    -- game:GetService("SoundService"):PlayLocalSound(soundId)
-    
-    local marginBottom = 40
-    Tabs.CanvasSize = UDim2.new(0, 0, 0, Tabs.UIListLayout.AbsoluteContentSize.Y + marginBottom)
-end)
-
--- 添加鼠标悬停效果（春节主题色）
-BlockerButton.MouseEnter:Connect(function()
-    if isInfoHidden then
-        PlayerInfoFrame.BackgroundColor3 = Color3.fromRGB(50, 10, 10) -- 深红色
-        SpringFestivalLabel.TextColor3 = Color3.fromRGB(255, 255, 255) -- 白色
+    local currentIndex = 1
+    while true do
+        wait(8) -- 每8秒切换一次
+        
+        -- 淡出效果
+        for i = 1, 10 do
+            BlessingLabel.TextTransparency = i / 10
+            wait(0.02)
+        end
+        
+        -- 切换文本
+        currentIndex = currentIndex + 1
+        if currentIndex > #blessings then
+            currentIndex = 1
+        end
+        BlessingLabel.Text = blessings[currentIndex]
+        
+        -- 淡入效果
+        for i = 10, 1, -1 do
+            BlessingLabel.TextTransparency = i / 10
+            wait(0.02)
+        end
     end
 end)
 
-BlockerButton.MouseLeave:Connect(function()
-    if isInfoHidden then
-        PlayerInfoFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30) -- 恢复原色
-        SpringFestivalLabel.TextColor3 = Color3.fromRGB(255, 215, 0) -- 金色
-    end
-end)
-
+-- 保持滚动区域计算
 Tabs.UIListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
     local marginBottom = 40
     Tabs.CanvasSize = UDim2.new(0, 0, 0, Tabs.UIListLayout.AbsoluteContentSize.Y + marginBottom)
@@ -6989,21 +6939,39 @@ end)
 local marginBottom = 40
 Tabs.CanvasSize = UDim2.new(0, 0, 0, Tabs.UIListLayout.AbsoluteContentSize.Y + marginBottom)
 
--- 添加自动春节祝福语切换
-spawn(function()
-    while wait(10) do -- 每10秒切换一次祝福语
-        if isInfoHidden and SpringFestivalLabel.Visible then
-            local blessings = {
-                "🐉 龙年吉祥 🐉",
-                "🎁 万事如意 🎁",
-                "🏮 福气满满 🏮",
-                "🎆 阖家幸福 🎆",
-                "💰 财源广进 💰"
-            }
-            local randomBlessing = blessings[math.random(1, #blessings)]
-            SpringFestivalLabel.Text = randomBlessing
-        end
-    end
+-- 鼠标悬停效果（轻微放大头像）
+PlayerInfoFrame.MouseEnter:Connect(function()
+    AvatarFrame:TweenSize(
+        UDim2.fromOffset(36, 36),
+        Enum.EasingDirection.Out,
+        Enum.EasingStyle.Quad,
+        0.2,
+        true
+    )
+    AvatarFrame:TweenPosition(
+        UDim2.fromOffset(9, 2),
+        Enum.EasingDirection.Out,
+        Enum.EasingStyle.Quad,
+        0.2,
+        true
+    )
+end)
+
+PlayerInfoFrame.MouseLeave:Connect(function()
+    AvatarFrame:TweenSize(
+        UDim2.fromOffset(34, 34),
+        Enum.EasingDirection.Out,
+        Enum.EasingStyle.Quad,
+        0.2,
+        true
+    )
+    AvatarFrame:TweenPosition(
+        UDim2.fromOffset(10, 3),
+        Enum.EasingDirection.Out,
+        Enum.EasingStyle.Quad,
+        0.2,
+        true
+    )
 end)
 
         
