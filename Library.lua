@@ -6769,10 +6769,10 @@ function Library:CreateWindow(WindowInfo)
         
         
 
---// Quick Command Box \\--
-local CommandFrame = New("Frame", {
+--// Target Distance Display \\--
+local DistanceFrame = New("Frame", {
     BackgroundTransparency = 0,
-    BackgroundColor3 = Color3.fromRGB(35, 40, 35),
+    BackgroundColor3 = Color3.fromRGB(40, 40, 30),
     Size = UDim2.new(0.3, 0, 0, 40),
     AnchorPoint = Vector2.new(0, 1),
     Position = UDim2.new(0, 0, 1, -21),
@@ -6781,107 +6781,121 @@ local CommandFrame = New("Frame", {
 })
 New("UICorner", {
     CornerRadius = UDim.new(0, Library.CornerRadius - 1),
-    Parent = CommandFrame,
+    Parent = DistanceFrame,
 })
 
-local TerminalIcon = New("TextLabel", {
+local TargetIcon = New("TextLabel", {
     BackgroundTransparency = 1,
-    Size = UDim2.fromOffset(24, 24),
-    Position = UDim2.fromOffset(8, 8),
-    Text = ">_",
-    TextSize = 14,
-    Font = Enum.Font.Code,
-    TextColor3 = Color3.fromRGB(100, 255, 100),
+    Size = UDim2.fromOffset(32, 32),
+    Position = UDim2.fromOffset(4, 4),
+    Text = "🎯",
+    TextSize = 18,
+    TextColor3 = Color3.fromRGB(255, 100, 100),
     ZIndex = 3,
-    Parent = CommandFrame,
+    Parent = DistanceFrame,
 })
 
-local CommandInput = New("TextBox", {
+local DistanceLabel = New("TextLabel", {
     BackgroundTransparency = 1,
-    Size = UDim2.new(1, -40, 1, 0),
-    Position = UDim2.fromOffset(36, 0),
-    Text = "输入命令...",
-    PlaceholderText = "输入命令...",
-    PlaceholderColor3 = Color3.fromRGB(100, 150, 100),
-    TextColor3 = Color3.fromRGB(200, 255, 200),
-    Font = Enum.Font.Code,
+    Size = UDim2.new(1, -40, 0.5, 0),
+    Position = UDim2.fromOffset(40, 4),
+    Text = "最近目标",
     TextSize = 12,
+    Font = Enum.Font.GothamBold,
+    TextColor3 = Color3.fromRGB(255, 255, 255),
     TextXAlignment = Enum.TextXAlignment.Left,
-    ClearTextOnFocus = false,
     ZIndex = 3,
-    Parent = CommandFrame,
+    Parent = DistanceFrame,
 })
 
--- 命令历史记录
-local commandHistory = {}
-local historyIndex = 0
+local TargetNameLabel = New("TextLabel", {
+    BackgroundTransparency = 1,
+    Size = UDim2.new(1, -40, 0.5, 0),
+    Position = UDim2.fromOffset(40, 20),
+    Text = "无目标",
+    TextSize = 10,
+    TextColor3 = Color3.fromRGB(200, 200, 200),
+    TextXAlignment = Enum.TextXAlignment.Left,
+    TextTruncate = Enum.TextTruncate.AtEnd,
+    ZIndex = 3,
+    Parent = DistanceFrame,
+})
 
--- 可用命令列表
-local commands = {
-    help = function()
-        print("可用命令: clear, time, fps, echo [文本], exec [脚本名]")
-    end,
-    clear = function()
-        print("\n\n\n\n\n\n\n\n\n\n") -- 清屏效果
-    end,
-    time = function()
-        print("当前时间: " .. os.date("%H:%M:%S"))
-    end,
-    echo = function(args)
-        print(args)
-    end,
-    exec = function(scriptName)
-        print("执行脚本: " .. scriptName)
-        -- 这里可以添加执行脚本的代码
-    end
-}
-
--- 处理命令
-local function ProcessCommand(cmd)
-    if cmd == "" then return end
+-- 查找最近的目标
+local function FindNearestTarget()
+    local player = game.Players.LocalPlayer
+    local character = player.Character
+    if not character then return nil, math.huge end
     
-    table.insert(commandHistory, cmd)
-    historyIndex = #commandHistory + 1
+    local root = character:FindFirstChild("HumanoidRootPart") or character:FindFirstChild("Torso")
+    if not root then return nil, math.huge end
     
-    local parts = {}
-    for part in cmd:gmatch("%S+") do
-        table.insert(parts, part)
-    end
+    local nearestPlayer = nil
+    local nearestDistance = math.huge
     
-    if #parts > 0 then
-        local cmdName = parts[1]:lower()
-        local args = table.concat(parts, " ", 2)
-        
-        if commands[cmdName] then
-            commands[cmdName](args)
-        else
-            print("未知命令: " .. cmdName .. "，输入 help 查看帮助")
+    for _, otherPlayer in pairs(game.Players:GetPlayers()) do
+        if otherPlayer ~= player and otherPlayer.Character then
+            local otherRoot = otherPlayer.Character:FindFirstChild("HumanoidRootPart") or otherPlayer.Character:FindFirstChild("Torso")
+            if otherRoot then
+                local distance = (root.Position - otherRoot.Position).Magnitude
+                if distance < nearestDistance then
+                    nearestDistance = distance
+                    nearestPlayer = otherPlayer
+                end
+            end
         end
     end
+    
+    return nearestPlayer, nearestDistance
 end
 
-CommandInput.FocusLost:Connect(function(enterPressed)
-    if enterPressed then
-        ProcessCommand(CommandInput.Text)
-        CommandInput.Text = ""
+-- 实时更新距离
+spawn(function()
+    while wait(0.2) do
+        local target, distance = FindNearestTarget()
+        
+        if target and distance < 1000 then -- 只显示1000距离内的目标
+            DistanceLabel.Text = string.format("%.1f studs", distance)
+            TargetNameLabel.Text = target.Name
+            
+            -- 根据距离改变颜色
+            if distance < 10 then
+                DistanceLabel.TextColor3 = Color3.fromRGB(255, 50, 50) -- 红色：非常近
+                TargetIcon.TextColor3 = Color3.fromRGB(255, 50, 50)
+            elseif distance < 30 then
+                DistanceLabel.TextColor3 = Color3.fromRGB(255, 150, 50) -- 橙色：近距离
+                TargetIcon.TextColor3 = Color3.fromRGB(255, 150, 50)
+            elseif distance < 100 then
+                DistanceLabel.TextColor3 = Color3.fromRGB(255, 255, 50) -- 黄色：中距离
+                TargetIcon.TextColor3 = Color3.fromRGB(255, 255, 50)
+            else
+                DistanceLabel.TextColor3 = Color3.fromRGB(100, 255, 100) -- 绿色：远距离
+                TargetIcon.TextColor3 = Color3.fromRGB(100, 255, 100)
+            end
+        else
+            DistanceLabel.Text = "无目标"
+            DistanceLabel.TextColor3 = Color3.fromRGB(150, 150, 150)
+            TargetNameLabel.Text = "点击刷新"
+            TargetIcon.TextColor3 = Color3.fromRGB(150, 150, 150)
+        end
     end
 end)
 
--- 键盘快捷键（上下键切换历史）
-game:GetService("UserInputService").InputBegan:Connect(function(input)
-    if CommandInput:IsFocused() then
-        if input.KeyCode == Enum.KeyCode.Up then
-            if historyIndex > 1 then
-                historyIndex = historyIndex - 1
-                CommandInput.Text = commandHistory[historyIndex] or ""
-                CommandInput.CursorPosition = #CommandInput.Text + 1
-            end
-        elseif input.KeyCode == Enum.KeyCode.Down then
-            if historyIndex < #commandHistory then
-                historyIndex = historyIndex + 1
-                CommandInput.Text = commandHistory[historyIndex] or ""
-                CommandInput.CursorPosition = #CommandInput.Text + 1
-            end
+-- 点击锁定目标
+local lockedTarget = nil
+DistanceFrame.MouseButton1Click:Connect(function()
+    local target, distance = FindNearestTarget()
+    
+    if target and distance < 1000 then
+        if lockedTarget == target then
+            lockedTarget = nil -- 解锁
+            TargetIcon.Text = "🎯"
+            TargetNameLabel.Text = target.Name .. " (已解锁)"
+        else
+            lockedTarget = target -- 锁定
+            TargetIcon.Text = "🔒"
+            TargetNameLabel.Text = target.Name .. " (已锁定)"
+            DistanceLabel.TextColor3 = Color3.fromRGB(255, 100, 255) -- 紫色表示锁定
         end
     end
 end)
