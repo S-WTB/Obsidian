@@ -6769,10 +6769,10 @@ function Library:CreateWindow(WindowInfo)
         
         
 
---// Quick Actions Frame \\--
-local QuickActionsFrame = New("Frame", {
+--// Quick Command Box \\--
+local CommandFrame = New("Frame", {
     BackgroundTransparency = 0,
-    BackgroundColor3 = "BackgroundColor",
+    BackgroundColor3 = Color3.fromRGB(35, 40, 35),
     Size = UDim2.new(0.3, 0, 0, 40),
     AnchorPoint = Vector2.new(0, 1),
     Position = UDim2.new(0, 0, 1, -21),
@@ -6781,82 +6781,110 @@ local QuickActionsFrame = New("Frame", {
 })
 New("UICorner", {
     CornerRadius = UDim.new(0, Library.CornerRadius - 1),
-    Parent = QuickActionsFrame,
+    Parent = CommandFrame,
 })
 
--- 按钮容器
-local ButtonsContainer = New("Frame", {
+local TerminalIcon = New("TextLabel", {
     BackgroundTransparency = 1,
-    Size = UDim2.new(1, 0, 1, 0),
-    Parent = QuickActionsFrame,
+    Size = UDim2.fromOffset(24, 24),
+    Position = UDim2.fromOffset(8, 8),
+    Text = ">_",
+    TextSize = 14,
+    Font = Enum.Font.Code,
+    TextColor3 = Color3.fromRGB(100, 255, 100),
+    ZIndex = 3,
+    Parent = CommandFrame,
 })
 
-local UIListLayout = New("UIListLayout", {
-    Parent = ButtonsContainer,
-    FillDirection = Enum.FillDirection.Horizontal,
-    HorizontalAlignment = Enum.HorizontalAlignment.Center,
-    VerticalAlignment = Enum.VerticalAlignment.Center,
-    Padding = UDim.new(0, 8),
+local CommandInput = New("TextBox", {
+    BackgroundTransparency = 1,
+    Size = UDim2.new(1, -40, 1, 0),
+    Position = UDim2.fromOffset(36, 0),
+    Text = "输入命令...",
+    PlaceholderText = "输入命令...",
+    PlaceholderColor3 = Color3.fromRGB(100, 150, 100),
+    TextColor3 = Color3.fromRGB(200, 255, 200),
+    Font = Enum.Font.Code,
+    TextSize = 12,
+    TextXAlignment = Enum.TextXAlignment.Left,
+    ClearTextOnFocus = false,
+    ZIndex = 3,
+    Parent = CommandFrame,
 })
 
--- 快捷按钮
-local quickActions = {
-    {icon = "🔒", tooltip = "锁定界面", callback = function()
-        -- 锁定界面功能
-        print("界面已锁定")
-    end},
-    {icon = "📸", tooltip = "截图", callback = function()
-        -- 截图功能
-        print("截图保存")
-    end},
-    {icon = "⚙️", tooltip = "设置", callback = function()
-        -- 打开设置
-        print("打开设置")
-    end},
-    {icon = "❓", tooltip = "帮助", callback = function()
-        -- 显示帮助
-        print("显示帮助")
-    end},
-    {icon = "⏰", tooltip = "计时器", callback = function()
-        -- 计时器功能
-        print("启动计时器")
-    end}
+-- 命令历史记录
+local commandHistory = {}
+local historyIndex = 0
+
+-- 可用命令列表
+local commands = {
+    help = function()
+        print("可用命令: clear, time, fps, echo [文本], exec [脚本名]")
+    end,
+    clear = function()
+        print("\n\n\n\n\n\n\n\n\n\n") -- 清屏效果
+    end,
+    time = function()
+        print("当前时间: " .. os.date("%H:%M:%S"))
+    end,
+    echo = function(args)
+        print(args)
+    end,
+    exec = function(scriptName)
+        print("执行脚本: " .. scriptName)
+        -- 这里可以添加执行脚本的代码
+    end
 }
 
-for i, action in ipairs(quickActions) do
-    local Button = New("TextButton", {
-        Size = UDim2.fromOffset(32, 32),
-        BackgroundTransparency = 0.8,
-        BackgroundColor3 = Color3.fromRGB(60, 60, 60),
-        Text = action.icon,
-        TextSize = 16,
-        TextColor3 = Color3.fromRGB(255, 255, 255),
-        Parent = ButtonsContainer,
-    })
+-- 处理命令
+local function ProcessCommand(cmd)
+    if cmd == "" then return end
     
-    New("UICorner", {
-        CornerRadius = UDim.new(1, 0),
-        Parent = Button,
-    })
+    table.insert(commandHistory, cmd)
+    historyIndex = #commandHistory + 1
     
-    -- 悬停效果
-    Button.MouseEnter:Connect(function()
-        game.TweenService:Create(Button, TweenInfo.new(0.2), {
-            BackgroundTransparency = 0.5,
-            Size = UDim2.fromOffset(34, 34)
-        }):Play()
-    end)
+    local parts = {}
+    for part in cmd:gmatch("%S+") do
+        table.insert(parts, part)
+    end
     
-    Button.MouseLeave:Connect(function()
-        game.TweenService:Create(Button, TweenInfo.new(0.2), {
-            BackgroundTransparency = 0.8,
-            Size = UDim2.fromOffset(32, 32)
-        }):Play()
-    end)
-    
-    -- 点击事件
-    Button.MouseButton1Click:Connect(action.callback)
+    if #parts > 0 then
+        local cmdName = parts[1]:lower()
+        local args = table.concat(parts, " ", 2)
+        
+        if commands[cmdName] then
+            commands[cmdName](args)
+        else
+            print("未知命令: " .. cmdName .. "，输入 help 查看帮助")
+        end
+    end
 end
+
+CommandInput.FocusLost:Connect(function(enterPressed)
+    if enterPressed then
+        ProcessCommand(CommandInput.Text)
+        CommandInput.Text = ""
+    end
+end)
+
+-- 键盘快捷键（上下键切换历史）
+game:GetService("UserInputService").InputBegan:Connect(function(input)
+    if CommandInput:IsFocused() then
+        if input.KeyCode == Enum.KeyCode.Up then
+            if historyIndex > 1 then
+                historyIndex = historyIndex - 1
+                CommandInput.Text = commandHistory[historyIndex] or ""
+                CommandInput.CursorPosition = #CommandInput.Text + 1
+            end
+        elseif input.KeyCode == Enum.KeyCode.Down then
+            if historyIndex < #commandHistory then
+                historyIndex = historyIndex + 1
+                CommandInput.Text = commandHistory[historyIndex] or ""
+                CommandInput.CursorPosition = #CommandInput.Text + 1
+            end
+        end
+    end
+end)
 
         
         
