@@ -6768,10 +6768,9 @@ function Library:CreateWindow(WindowInfo)
         
         
         
---// Player Info Frame \\--
+       --// Player Info Frame \\--
 local PlayerInfoFrame = New("Frame", {
-    BackgroundTransparency = 0.6,
-    BackgroundColor3 = Color3.fromRGB(220, 53, 69), -- 春节红
+    BackgroundTransparency = 1, -- 完全透明背景
     Size = UDim2.new(0.3, 0, 0, 40),
     AnchorPoint = Vector2.new(0, 1),
     Position = UDim2.new(0, 0, 1, -21),
@@ -6783,14 +6782,14 @@ New("UICorner", {
     Parent = PlayerInfoFrame,
 })
 
--- 简单的文本显示
+-- 红色文本显示
 local YearLabel = New("TextLabel", {
     BackgroundTransparency = 1,
     Size = UDim2.new(1, 0, 1, 0),
     Text = "2026·马年快乐",
     Font = Enum.Font.GothamBold,
     TextSize = 14,
-    TextColor3 = Color3.fromRGB(255, 255, 255), -- 白色
+    TextColor3 = Color3.fromRGB(220, 53, 69), -- 春节红色
     TextXAlignment = Enum.TextXAlignment.Center,
     TextYAlignment = Enum.TextYAlignment.Center,
     ZIndex = 3,
@@ -6805,7 +6804,6 @@ end)
 
 local marginBottom = 40
 Tabs.CanvasSize = UDim2.new(0, 0, 0, Tabs.UIListLayout.AbsoluteContentSize.Y + marginBottom)
-        
         
 
         --// Container \\--
