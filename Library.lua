@@ -6499,7 +6499,7 @@ function Library:CreateWindow(WindowInfo)
             Size = UDim2.new(1, 0, 0, 48),
             Parent = MainFrame,
         })
-        Library:MakeDraggable(MainFrame, TopBar, false, true)
+        Library:MakeDraggable(MainFrame, TopBar, true, true)
 
         --// Title
         local TitleHolder = New("Frame", {
