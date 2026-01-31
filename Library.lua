@@ -1,4 +1,3 @@
---By霖溺
 local cloneref = (cloneref or clonereference or function(instance: any)
     return instance
 end)
@@ -6274,7 +6273,7 @@ function Library:CreateWindow(WindowInfo)
     local MoveReservedWidth = (MoveIcon and 28 + 10) or 0
 
     local SidebarDrag = {
-        Active = false,
+        Active = true,
         StartWidth = 0,
         StartX = 0,
         TouchId = nil,
@@ -6770,7 +6769,7 @@ function Library:CreateWindow(WindowInfo)
         
        --// Player Info Frame \\--
 local PlayerInfoFrame = New("Frame", {
-    BackgroundTransparency = 1, -- 完全透明背景
+    BackgroundTransparency = 1,
     Size = UDim2.new(0.3, 0, 0, 40),
     AnchorPoint = Vector2.new(0, 1),
     Position = UDim2.new(0, 0, 1, -21),
@@ -6782,7 +6781,6 @@ New("UICorner", {
     Parent = PlayerInfoFrame,
 })
 
--- 红色文本显示
 local YearLabel = New("TextLabel", {
     BackgroundTransparency = 1,
     Size = UDim2.new(1, 0, 1, 0),
@@ -6796,7 +6794,6 @@ local YearLabel = New("TextLabel", {
     Parent = PlayerInfoFrame,
 })
 
--- 保持滚动区域计算
 Tabs.UIListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
     local marginBottom = 40
     Tabs.CanvasSize = UDim2.new(0, 0, 0, Tabs.UIListLayout.AbsoluteContentSize.Y + marginBottom)
