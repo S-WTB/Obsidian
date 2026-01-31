@@ -6770,8 +6770,8 @@ function Library:CreateWindow(WindowInfo)
         
 --// Player Info Frame \\--
 local PlayerInfoFrame = New("Frame", {
-    BackgroundTransparency = 0,
-    BackgroundColor3 = Color3.fromRGB(180, 40, 40), -- 春节红色背景
+    BackgroundTransparency = 0.6,
+    BackgroundColor3 = Color3.fromRGB(220, 53, 69), -- 春节红
     Size = UDim2.new(0.3, 0, 0, 40),
     AnchorPoint = Vector2.new(0, 1),
     Position = UDim2.new(0, 0, 1, -21),
@@ -6783,152 +6783,19 @@ New("UICorner", {
     Parent = PlayerInfoFrame,
 })
 
--- 添加春节纹理背景
-local SpringTexture = New("ImageLabel", {
+-- 简单的文本显示
+local YearLabel = New("TextLabel", {
     BackgroundTransparency = 1,
     Size = UDim2.new(1, 0, 1, 0),
-    Image = "rbxassetid://15213430966", -- 春节纹理
-    ImageTransparency = 0.2,
-    ZIndex = 2,
-    Parent = PlayerInfoFrame,
-})
-
--- 获取玩家头像
-local avatarUrl = "rbxassetid://0"
-pcall(function()
-    avatarUrl = game.Players:GetUserThumbnailAsync(
-        game.Players.LocalPlayer.UserId,
-        Enum.ThumbnailType.AvatarBust,
-        Enum.ThumbnailSize.Size48x48
-    )
-end)
-
--- 头像框（带金色边框效果）
-local AvatarFrame = New("Frame", {
-    BackgroundTransparency = 0,
-    BackgroundColor3 = Color3.fromRGB(255, 215, 0), -- 金色边框
-    Size = UDim2.fromOffset(34, 34), -- 比头像大2像素作为边框
-    Position = UDim2.fromOffset(10, 3),
-    ZIndex = 3,
-    Parent = PlayerInfoFrame,
-})
-New("UICorner", {
-    CornerRadius = UDim.new(1, 0),
-    Parent = AvatarFrame,
-})
-
-local AvatarImage = New("ImageLabel", {
-    BackgroundTransparency = 1,
-    Size = UDim2.new(1, -2, 1, -2), -- 比外框小2像素
-    Position = UDim2.new(0, 1, 0, 1),
-    Image = avatarUrl,
-    ImageColor3 = Color3.fromRGB(255, 255, 255),
-    ZIndex = 4,
-    Parent = AvatarFrame,
-})
-New("UICorner", {
-    CornerRadius = UDim.new(1, 0),
-    Parent = AvatarImage,
-})
-
--- 显示名称（春节金色）
-local DisplayNameLabel = New("TextLabel", {
-    BackgroundTransparency = 1,
-    Size = UDim2.new(0, 80, 0, 16),
-    Position = UDim2.fromOffset(52, 4),
-    Text = game.Players.LocalPlayer.DisplayName,
+    Text = "2026·马年快乐",
     Font = Enum.Font.GothamBold,
-    TextSize = 12,
-    TextColor3 = Color3.fromRGB(255, 215, 0), -- 金色
-    TextXAlignment = Enum.TextXAlignment.Left,
-    ZIndex = 3,
-    Parent = PlayerInfoFrame,
-})
-
--- 用户名（白色）
-local UsernameLabel = New("TextLabel", {
-    BackgroundTransparency = 1,
-    Size = UDim2.new(0, 80, 0, 12),
-    Position = UDim2.fromOffset(52, 20),
-    Text = "@" .. game.Players.LocalPlayer.Name,
-    Font = Enum.Font.Gotham,
-    TextSize = 10,
+    TextSize = 14,
     TextColor3 = Color3.fromRGB(255, 255, 255), -- 白色
-    TextXAlignment = Enum.TextXAlignment.Left,
+    TextXAlignment = Enum.TextXAlignment.Center,
+    TextYAlignment = Enum.TextYAlignment.Center,
     ZIndex = 3,
     Parent = PlayerInfoFrame,
 })
-
--- 春节图标装饰（龙年）
-local DragonIcon = New("TextLabel", {
-    BackgroundTransparency = 1,
-    Size = UDim2.fromOffset(20, 20),
-    Position = UDim2.new(1, -25, 0.5, -10),
-    Text = "🐉",
-    Font = Enum.Font.SourceSans,
-    TextSize = 16,
-    TextColor3 = Color3.fromRGB(255, 215, 0),
-    ZIndex = 3,
-    Parent = PlayerInfoFrame,
-})
-
--- 底部红色装饰条
-local DecorationBar = New("Frame", {
-    BackgroundColor3 = Color3.fromRGB(255, 215, 0), -- 金色
-    Size = UDim2.new(1, 0, 0, 2),
-    Position = UDim2.new(0, 0, 1, -2),
-    ZIndex = 3,
-    Parent = PlayerInfoFrame,
-})
-
--- 春节祝福语（小标签）
-local BlessingLabel = New("TextLabel", {
-    BackgroundTransparency = 1,
-    Size = UDim2.new(1, -100, 0, 12),
-    Position = UDim2.new(0, 140, 0.5, -6),
-    Text = "龙年大吉 • 万事如意",
-    Font = Enum.Font.Gotham,
-    TextSize = 9,
-    TextColor3 = Color3.fromRGB(255, 255, 255),
-    TextXAlignment = Enum.TextXAlignment.Left,
-    ZIndex = 3,
-    Parent = PlayerInfoFrame,
-})
-
--- 添加动态效果：祝福语轮换
-spawn(function()
-    local blessings = {
-        "龙年大吉 • 万事如意",
-        "恭喜发财 • 红包拿来",
-        "龙马精神 • 福气满满",
-        "新年快乐 • 阖家幸福",
-        "财源广进 • 好运连连"
-    }
-    
-    local currentIndex = 1
-    while true do
-        wait(8) -- 每8秒切换一次
-        
-        -- 淡出效果
-        for i = 1, 10 do
-            BlessingLabel.TextTransparency = i / 10
-            wait(0.02)
-        end
-        
-        -- 切换文本
-        currentIndex = currentIndex + 1
-        if currentIndex > #blessings then
-            currentIndex = 1
-        end
-        BlessingLabel.Text = blessings[currentIndex]
-        
-        -- 淡入效果
-        for i = 10, 1, -1 do
-            BlessingLabel.TextTransparency = i / 10
-            wait(0.02)
-        end
-    end
-end)
 
 -- 保持滚动区域计算
 Tabs.UIListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
@@ -6938,42 +6805,6 @@ end)
 
 local marginBottom = 40
 Tabs.CanvasSize = UDim2.new(0, 0, 0, Tabs.UIListLayout.AbsoluteContentSize.Y + marginBottom)
-
--- 鼠标悬停效果（轻微放大头像）
-PlayerInfoFrame.MouseEnter:Connect(function()
-    AvatarFrame:TweenSize(
-        UDim2.fromOffset(36, 36),
-        Enum.EasingDirection.Out,
-        Enum.EasingStyle.Quad,
-        0.2,
-        true
-    )
-    AvatarFrame:TweenPosition(
-        UDim2.fromOffset(9, 2),
-        Enum.EasingDirection.Out,
-        Enum.EasingStyle.Quad,
-        0.2,
-        true
-    )
-end)
-
-PlayerInfoFrame.MouseLeave:Connect(function()
-    AvatarFrame:TweenSize(
-        UDim2.fromOffset(34, 34),
-        Enum.EasingDirection.Out,
-        Enum.EasingStyle.Quad,
-        0.2,
-        true
-    )
-    AvatarFrame:TweenPosition(
-        UDim2.fromOffset(10, 3),
-        Enum.EasingDirection.Out,
-        Enum.EasingStyle.Quad,
-        0.2,
-        true
-    )
-end)
-
         
         
 
