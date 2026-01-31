@@ -6768,11 +6768,10 @@ function Library:CreateWindow(WindowInfo)
         
         
         
-
---// 游戏 \\--
-local GameInfoFrame = New("Frame", {
+--// Player Info Frame \\--
+local PlayerInfoFrame = New("Frame", {
     BackgroundTransparency = 0,
-    BackgroundColor3 = Color3.fromRGB(30, 35, 45),
+    BackgroundColor3 = "BackgroundColor",
     Size = UDim2.new(0.3, 0, 0, 40),
     AnchorPoint = Vector2.new(0, 1),
     Position = UDim2.new(0, 0, 1, -21),
@@ -6781,338 +6780,232 @@ local GameInfoFrame = New("Frame", {
 })
 New("UICorner", {
     CornerRadius = UDim.new(0, Library.CornerRadius - 1),
-    Parent = GameInfoFrame,
+    Parent = PlayerInfoFrame,
 })
 
--- 游戏图标
-local GameIcon = New("ImageLabel", {
-    BackgroundColor3 = Color3.fromRGB(50, 55, 65),
+local BlockerButton = New("TextButton", {
+    BackgroundTransparency = 1,
+    Size = UDim2.new(1, 0, 1, 0),
+    Text = "",
+    ZIndex = 2,
+    Parent = PlayerInfoFrame,
+})
+
+local avatarUrl = "rbxassetid://0"
+pcall(function()
+    avatarUrl = game.Players:GetUserThumbnailAsync(
+        game.Players.LocalPlayer.UserId,
+        Enum.ThumbnailType.AvatarBust,
+        Enum.ThumbnailSize.Size48x48
+    )
+end)
+
+local AvatarFrame = New("Frame", {
+    BackgroundTransparency = 1,
     Size = UDim2.fromOffset(32, 32),
-    Position = UDim2.fromOffset(4, 4),
-    Image = "rbxthumb://type=GameIcon&id=" .. game.PlaceId .. "&w=128&h=128",
-    ScaleType = Enum.ScaleType.Crop,
+    Position = UDim2.fromOffset(12, 4),
     ZIndex = 3,
-    Parent = GameInfoFrame,
+    Parent = PlayerInfoFrame,
+})
+
+local AvatarImage = New("ImageLabel", {
+    BackgroundTransparency = 0,
+    BackgroundColor3 = Color3.fromRGB(181, 181, 181),
+    Size = UDim2.fromOffset(32, 32),
+    Position = UDim2.fromOffset(0, 0),
+    Image = "",
+    ImageColor3 = Color3.fromRGB(255, 255, 255),
+    ImageTransparency = 1,
+    ZIndex = 3,
+    Parent = AvatarFrame,
 })
 New("UICorner", {
-    CornerRadius = UDim.new(0, 4),
-    Parent = GameIcon,
+    CornerRadius = UDim.new(1, 0),
+    Parent = AvatarImage,
 })
 
--- 游戏名称
-local GameNameLabel = New("TextLabel", {
+-- 添加春节装饰背景
+local SpringFestivalBG = New("ImageLabel", {
     BackgroundTransparency = 1,
-    Size = UDim2.new(1, -40, 0, 16),
-    Position = UDim2.fromOffset(40, 4),
-    Text = game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name,
-    Font = Enum.Font.GothamMedium,
+    Size = UDim2.new(1, 0, 1, 0),
+    Image = "rbxassetid://15213430966", -- 春节红色背景图案
+    ScaleType = Enum.ScaleType.Crop,
+    ImageTransparency = 0.3,
+    ZIndex = 1,
+    Parent = PlayerInfoFrame,
+})
+
+-- 显示名称标签（春节红色）
+local DisplayNameLabel = New("TextLabel", {
+    BackgroundTransparency = 1,
+    Size = UDim2.new(0, 80, 0, 16),
+    Position = UDim2.fromOffset(50, 4),
+    Text = game.Players.LocalPlayer.DisplayName,
+    Font = Enum.Font.GothamBold,
     TextSize = 12,
-    TextColor3 = Color3.fromRGB(255, 255, 255),
+    TextColor3 = Color3.fromRGB(220, 53, 69), -- 春节红
     TextXAlignment = Enum.TextXAlignment.Left,
-    TextTruncate = Enum.TextTruncate.AtEnd,
     ZIndex = 3,
-    Parent = GameInfoFrame,
+    Visible = false,
+    Parent = PlayerInfoFrame,
 })
 
--- 服务器状态
-local ServerStatusLabel = New("TextLabel", {
+-- 用户名标签（金色）
+local UsernameLabel = New("TextLabel", {
     BackgroundTransparency = 1,
-    Size = UDim2.new(1, -40, 0, 12),
-    Position = UDim2.fromOffset(40, 20),
-    Text = "载入中...",
+    Size = UDim2.new(0, 80, 0, 12),
+    Position = UDim2.fromOffset(50, 20),
+    Text = "@" .. game.Players.LocalPlayer.Name,
     Font = Enum.Font.Gotham,
     TextSize = 10,
-    TextColor3 = Color3.fromRGB(200, 200, 200),
+    TextColor3 = Color3.fromRGB(255, 215, 0), -- 金色
     TextXAlignment = Enum.TextXAlignment.Left,
     ZIndex = 3,
-    Parent = GameInfoFrame,
-})
-
--- 扩展信息面板（点击展开）
-local ExpandedPanel = New("ScrollingFrame", {
-    BackgroundColor3 = Color3.fromRGB(25, 30, 40),
-    Size = UDim2.new(1, 0, 0, 0),
-    Position = UDim2.new(0, 0, 1, 4),
-    AnchorPoint = Vector2.new(0, 0),
-    ScrollBarThickness = 3,
-    ScrollBarImageColor3 = Color3.fromRGB(80, 80, 90),
-    CanvasSize = UDim2.new(0, 0, 0, 180),
     Visible = false,
-    ZIndex = 2,
-    Parent = GameInfoFrame,
-})
-New("UICorner", {
-    CornerRadius = UDim.new(0, Library.CornerRadius - 1),
-    Parent = ExpandedPanel,
+    Parent = PlayerInfoFrame,
 })
 
-local ExpandedContent = New("Frame", {
+-- 春节专属标签
+local SpringFestivalLabel = New("TextLabel", {
     BackgroundTransparency = 1,
-    Size = UDim2.new(1, -8, 0, 180),
-    Position = UDim2.new(0, 4, 0, 4),
-    Parent = ExpandedPanel,
-})
-
--- 点击展开/收起
-local isExpanded = false
-
-GameInfoFrame.MouseButton1Click:Connect(function()
-    isExpanded = not isExpanded
-    
-    if isExpanded then
-        -- 展开动画
-        ExpandedPanel.Visible = true
-        game.TweenService:Create(ExpandedPanel, TweenInfo.new(0.3), {
-            Size = UDim2.new(1, 0, 0, 140)
-        }):Play()
-        game.TweenService:Create(GameInfoFrame, TweenInfo.new(0.3), {
-            Size = UDim2.new(0.3, 0, 0, 180)
-        }):Play()
-    else
-        -- 收起动画
-        game.TweenService:Create(ExpandedPanel, TweenInfo.new(0.3), {
-            Size = UDim2.new(1, 0, 0, 0)
-        }):Play()
-        game.TweenService:Create(GameInfoFrame, TweenInfo.new(0.3), {
-            Size = UDim2.new(0.3, 0, 0, 40)
-        }):Play()
-        wait(0.3)
-        ExpandedPanel.Visible = false
-    end
-end)
-
--- 获取游戏信息
-local function GetGameInfo()
-    local success, info = pcall(function()
-        return game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId)
-    end)
-    
-    if success then
-        GameNameLabel.Text = info.Name
-        return info
-    else
-        GameNameLabel.Text = game.Name
-        return nil
-    end
-end
-
--- 获取服务器信息
-local function UpdateServerInfo()
-    -- 玩家数量
-    local playerCount = #game.Players:GetPlayers()
-    local maxPlayers = game.Players.MaxPlayers
-    
-    -- 服务器运行时间
-    local serverTime = math.floor(game.Workspace.DistributedGameTime or 0)
-    local hours = math.floor(serverTime / 3600)
-    local minutes = math.floor((serverTime % 3600) / 60)
-    
-    -- 更新状态标签
-    ServerStatusLabel.Text = string.format("%d/%d 玩家 | 运行: %02d:%02d", 
-        playerCount, maxPlayers, hours, minutes)
-    
-    -- 根据玩家数量改变颜色
-    if playerCount / maxPlayers > 0.9 then
-        ServerStatusLabel.TextColor3 = Color3.fromRGB(255, 100, 100) -- 红色，拥挤
-    elseif playerCount / maxPlayers > 0.5 then
-        ServerStatusLabel.TextColor3 = Color3.fromRGB(255, 200, 100) -- 黄色，中等
-    else
-        ServerStatusLabel.TextColor3 = Color3.fromRGB(100, 255, 100) -- 绿色，空闲
-    end
-end
-
--- 创建详细信息项
-local function CreateInfoItem(parent, title, value, yPosition)
-    local container = New("Frame", {
-        BackgroundTransparency = 1,
-        Size = UDim2.new(1, 0, 0, 24),
-        Position = UDim2.new(0, 0, 0, yPosition),
-        Parent = parent,
-    })
-    
-    local titleLabel = New("TextLabel", {
-        BackgroundTransparency = 1,
-        Size = UDim2.new(0.4, 0, 1, 0),
-        Text = title,
-        Font = Enum.Font.Gotham,
-        TextSize = 11,
-        TextColor3 = Color3.fromRGB(180, 180, 200),
-        TextXAlignment = Enum.TextXAlignment.Left,
-        Parent = container,
-    })
-    
-    local valueLabel = New("TextLabel", {
-        BackgroundTransparency = 1,
-        Size = UDim2.new(0.6, 0, 1, 0),
-        Position = UDim2.new(0.4, 0, 0, 0),
-        Text = value,
-        Font = Enum.Font.GothamMedium,
-        TextSize = 11,
-        TextColor3 = Color3.fromRGB(255, 255, 255),
-        TextXAlignment = Enum.TextXAlignment.Right,
-        Parent = container,
-    })
-    
-    return {titleLabel = titleLabel, valueLabel = valueLabel}
-end
-
--- 创建详细信息
-local infoItems = {}
-local yPos = 0
-local itemHeight = 24
-
-local infoCategories = {
-    "游戏ID",
-    "创建者",
-    "游戏类型",
-    "服务器位置",
-    "FPS限制",
-    "图形质量",
-    "物理模式",
-    "客户端版本"
-}
-
-for i, category in ipairs(infoCategories) do
-    infoItems[category] = CreateInfoItem(ExpandedContent, category, "获取中...", yPos)
-    yPos = yPos + itemHeight
-end
-
--- 更新详细信息
-local function UpdateDetailedInfo()
-    -- 游戏ID
-    infoItems["游戏ID"].valueLabel.Text = tostring(game.PlaceId)
-    
-    -- 创建者
-    local creatorName = "未知"
-    local creatorType = "未知"
-    
-    local success, info = pcall(function()
-        return game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId)
-    end)
-    
-    if success then
-        creatorName = info.Creator.Name
-        creatorType = info.Creator.CreatorType == Enum.CreatorType.User and "用户" or "群组"
-    end
-    
-    infoItems["创建者"].valueLabel.Text = creatorName .. " (" .. creatorType .. ")"
-    
-    -- 游戏类型（根据名称猜测）
-    local gameType = "其他"
-    local gameName = game.Name:lower()
-    
-    if gameName:find("obbie") or gameName:find("obby") then
-        gameType = "跑酷"
-    elseif gameName:find("simulator") or gameName:find("模拟") then
-        gameType = "模拟器"
-    elseif gameName:find("tycoon") or gameName:find("大亨") then
-        gameType = "大亨"
-    elseif gameName:find("roleplay") or gameName:find("角色扮演") then
-        gameType = "角色扮演"
-    elseif gameName:find("fighting") or gameName:find("战斗") then
-        gameType = "格斗"
-    elseif gameName:find("adventure") or gameName:find("冒险") then
-        gameType = "冒险"
-    end
-    
-    infoItems["游戏类型"].valueLabel.Text = gameType
-    
-    -- 服务器位置（模拟）
-    local serverLocations = {"美国", "欧洲", "亚洲", "澳大利亚"}
-    infoItems["服务器位置"].valueLabel.Text = serverLocations[math.random(1, #serverLocations)]
-    
-    -- FPS限制
-    local fpsCap = "60"
-    if settings():GetService("RenderSettings").QualityLevel == Enum.QualityLevel.Level10 then
-        fpsCap = "无限制"
-    end
-    infoItems["FPS限制"].valueLabel.Text = fpsCap
-    
-    -- 图形质量
-    local qualityLevel = settings():GetService("RenderSettings").QualityLevel.Value
-    infoItems["图形质量"].valueLabel.Text = "等级 " .. tostring(qualityLevel)
-    
-    -- 物理模式
-    local physicsMode = game.Workspace.PhysicsSimulationRate == 60 and "标准" or "自定义"
-    infoItems["物理模式"].valueLabel.Text = physicsMode
-    
-    -- 客户端版本
-    infoItems["客户端版本"].valueLabel.Text = "Roblox " .. version()
-end
-
--- 创建复制按钮
-local CopyButton = New("TextButton", {
-    BackgroundColor3 = Color3.fromRGB(60, 65, 75),
-    Size = UDim2.new(0, 24, 0, 24),
-    Position = UDim2.new(1, -28, 0.5, -12),
-    AnchorPoint = Vector2.new(1, 0.5),
-    Text = "📋",
-    TextSize = 12,
-    TextColor3 = Color3.fromRGB(255, 255, 255),
+    Size = UDim2.new(0, 80, 0, 12),
+    Position = UDim2.fromOffset(50, 14),
+    Text = "🐉 龙年大吉 🎉",
+    Font = Enum.Font.GothamBold,
+    TextSize = 10,
+    TextColor3 = Color3.fromRGB(255, 215, 0), -- 金色
+    TextXAlignment = Enum.TextXAlignment.Left,
     ZIndex = 3,
-    Parent = GameInfoFrame,
-})
-New("UICorner", {
-    CornerRadius = UDim.new(0, 4),
-    Parent = CopyButton,
+    Visible = true,
+    Parent = PlayerInfoFrame,
 })
 
-CopyButton.MouseButton1Click:Connect(function()
-    -- 复制游戏信息到剪贴板
-    local info = {
-        "游戏名称: " .. GameNameLabel.Text,
-        "游戏ID: " .. game.PlaceId,
-        "服务器: " .. ServerStatusLabel.Text,
-        "玩家: " .. game.Players.LocalPlayer.Name,
-        "时间: " .. os.date("%Y-%m-%d %H:%M:%S")
-    }
+-- 添加春节小装饰（福字）
+local FuCharacter = New("TextLabel", {
+    BackgroundTransparency = 1,
+    Size = UDim2.fromOffset(20, 20),
+    Position = UDim2.fromOffset(0, 0),
+    Text = "福",
+    Font = Enum.Font.GothamBold,
+    TextSize = 18,
+    TextColor3 = Color3.fromRGB(220, 53, 69), -- 春节红
+    ZIndex = 2,
+    Visible = true,
+    Parent = PlayerInfoFrame,
+})
+
+-- 添加红包装饰
+local RedPacket = New("ImageLabel", {
+    BackgroundTransparency = 1,
+    Size = UDim2.fromOffset(24, 24),
+    Position = UDim2.new(1, -30, 0, 8),
+    Image = "rbxassetid://15213431987", -- 红包图标
+    ZIndex = 2,
+    Visible = true,
+    Parent = PlayerInfoFrame,
+})
+
+local isInfoHidden = true
+
+-- 点击切换时添加春节特效
+BlockerButton.MouseButton1Click:Connect(function()
+    isInfoHidden = not isInfoHidden
+    if isInfoHidden then
+        -- 隐藏状态：显示春节主题
+        AvatarImage.Image = ""
+        AvatarImage.BackgroundColor3 = Color3.fromRGB(181, 181, 181)
+        AvatarImage.BackgroundTransparency = 0
+        AvatarImage.ImageTransparency = 1
+        
+        -- 春节装饰
+        DisplayNameLabel.Visible = false
+        UsernameLabel.Visible = false
+        SpringFestivalLabel.Visible = true
+        SpringFestivalLabel.Text = "🐉 龙年大吉 🎉"
+        FuCharacter.Visible = true
+        RedPacket.Visible = true
+        
+        -- 春节特效：闪烁红包
+        spawn(function()
+            for i = 1, 3 do
+                RedPacket.ImageTransparency = 0.3
+                wait(0.1)
+                RedPacket.ImageTransparency = 0
+                wait(0.1)
+            end
+        end)
+    else
+        -- 显示状态：显示玩家信息（带春节色彩）
+        AvatarImage.Image = avatarUrl
+        AvatarImage.BackgroundTransparency = 1
+        AvatarImage.ImageColor3 = Color3.fromRGB(255, 255, 255)
+        AvatarImage.ImageTransparency = 0
+        
+        -- 显示玩家信息
+        DisplayNameLabel.Visible = true
+        UsernameLabel.Visible = true
+        SpringFestivalLabel.Visible = false
+        FuCharacter.Visible = false
+        RedPacket.Visible = false
+        
+        -- 春节祝福语随机显示
+        local blessings = {
+            "🎊 恭喜发财 🎊",
+            "🧧 红包拿来 🧧",
+            "🐲 龙马精神 🐲",
+            "🎇 新年快乐 🎇"
+        }
+        local randomBlessing = blessings[math.random(1, #blessings)]
+        SpringFestivalLabel.Text = randomBlessing
+    end
     
-    setclipboard(table.concat(info, "\n"))
+    -- 添加点击音效（可选）
+    -- game:GetService("SoundService"):PlayLocalSound(soundId)
     
-    -- 显示复制成功反馈
-    local originalText = CopyButton.Text
-    CopyButton.Text = "✅"
-    wait(0.5)
-    CopyButton.Text = originalText
+    local marginBottom = 40
+    Tabs.CanvasSize = UDim2.new(0, 0, 0, Tabs.UIListLayout.AbsoluteContentSize.Y + marginBottom)
 end)
 
--- 创建性能监视器（右键点击显示）
-local PerformanceWindow = New("Frame", {
-    BackgroundColor3 = Color3.fromRGB(25, 30, 40),
-    Size = UDim2.new(0, 200, 0, 100),
-    Position = UDim2.new(0.5, -100, 0.5, -50),
-    Visible = false,
-    ZIndex = 100,
-    Parent = game.CoreGui,
-})
-New("UICorner", {
-    CornerRadius = UDim.new(0, 8),
-    Parent = PerformanceWindow,
-})
-
-GameInfoFrame.MouseButton2Click:Connect(function()
-    PerformanceWindow.Visible = not PerformanceWindow.Visible
-end)
-
--- 实时更新
-spawn(function()
-    -- 首次更新
-    GetGameInfo()
-    UpdateServerInfo()
-    UpdateDetailedInfo()
-    
-    -- 定期更新服务器信息
-    while wait(5) do
-        UpdateServerInfo()
-        UpdateDetailedInfo()
+-- 添加鼠标悬停效果（春节主题色）
+BlockerButton.MouseEnter:Connect(function()
+    if isInfoHidden then
+        PlayerInfoFrame.BackgroundColor3 = Color3.fromRGB(50, 10, 10) -- 深红色
+        SpringFestivalLabel.TextColor3 = Color3.fromRGB(255, 255, 255) -- 白色
     end
 end)
 
--- 监听玩家变化
-game.Players.PlayerAdded:Connect(UpdateServerInfo)
-game.Players.PlayerRemoving:Connect(UpdateServerInfo)
-        
-        
+BlockerButton.MouseLeave:Connect(function()
+    if isInfoHidden then
+        PlayerInfoFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30) -- 恢复原色
+        SpringFestivalLabel.TextColor3 = Color3.fromRGB(255, 215, 0) -- 金色
+    end
+end)
+
+Tabs.UIListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+    local marginBottom = 40
+    Tabs.CanvasSize = UDim2.new(0, 0, 0, Tabs.UIListLayout.AbsoluteContentSize.Y + marginBottom)
+end)
+
+local marginBottom = 40
+Tabs.CanvasSize = UDim2.new(0, 0, 0, Tabs.UIListLayout.AbsoluteContentSize.Y + marginBottom)
+
+-- 添加自动春节祝福语切换
+spawn(function()
+    while wait(10) do -- 每10秒切换一次祝福语
+        if isInfoHidden and SpringFestivalLabel.Visible then
+            local blessings = {
+                "🐉 龙年吉祥 🐉",
+                "🎁 万事如意 🎁",
+                "🏮 福气满满 🏮",
+                "🎆 阖家幸福 🎆",
+                "💰 财源广进 💰"
+            }
+            local randomBlessing = blessings[math.random(1, #blessings)]
+            SpringFestivalLabel.Text = randomBlessing
+        end
+    end
+end)
+
         
         
 
