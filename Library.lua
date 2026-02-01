@@ -6625,7 +6625,7 @@ function Library:CreateWindow(WindowInfo)
 
         SearchBox = New("TextBox", {
             BackgroundColor3 = "MainColor",
-            PlaceholderText = "Search",
+            PlaceholderText = "搜索",
             Size = WindowInfo.SearchbarSize,
             TextScaled = true,
             Visible = not (WindowInfo.DisableSearch or false),
@@ -8007,7 +8007,7 @@ Tabs.CanvasSize = UDim2.new(0, 0, 0, Tabs.UIListLayout.AbsoluteContentSize.Y + m
     end
 
     if Library.IsMobile then
-        local ToggleButton = Library:AddDraggableButton("显示/隐藏", function()
+        local ToggleButton = Library:AddDraggableButton("☾开关☽", function()
             Library:Toggle()
         end)
 
