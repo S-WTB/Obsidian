@@ -1,3 +1,4 @@
+--By霖溺
 local cloneref = (cloneref or clonereference or function(instance: any)
     return instance
 end)
@@ -1115,10 +1116,10 @@ local FetchIcons, Icons = pcall(function()
     ) :: () -> IconModule)()
 end)
 
-function Library:GetSnowflakeIcon()
-    local SnowflakeIcon = self:GetIcon("snowflake")
-    if SnowflakeIcon then
-        return SnowflakeIcon
+function Library:GetBloodIcon()
+    local BloodIcon = self:GetIcon("snowflake")
+    if BloodIcon then
+        return BloodIcon
     end
     
     local alternateNames = {"snowflake-2", "snowing", "ice", "winter"}
@@ -5959,15 +5960,15 @@ function Library:Notify(...)
     return Data
 end
 
-function Library:AddSnowEffect(Parent: GuiObject, SnowCount: number?, SnowSize: number?, Speed: number?, Color: Color3?)
-    SnowCount = SnowCount or 40 
-    SnowSize = SnowSize or 16
-    Speed = Speed or 0.6
-    Color = Color or Color3.fromRGB(240, 248, 255)
+function Library:AddBloodEffect(Parent: GuiObject, BloodCount: number?, BloodSize: number?, Speed: number?, Color: Color3?)
+    BloodCount = BloodCount or 80
+    BloodSize = BloodSize or 12
+    Speed = Speed or 1.2
+    Color = Color or Color3.fromRGB(139, 0, 0)  -- 深红色
 
-    local Snowflakes = {}
+    local BloodDrops = {}
     
-    local SnowContainer = New("Frame", {
+    local BloodContainer = New("Frame", {
         BackgroundTransparency = 1,
         Size = UDim2.fromScale(1, 1),
         ZIndex = 1,
@@ -5979,7 +5980,7 @@ function Library:AddSnowEffect(Parent: GuiObject, SnowCount: number?, SnowSize: 
         local parentCorner = Parent.UICorner
         New("UICorner", {
             CornerRadius = parentCorner.CornerRadius,
-            Parent = SnowContainer,
+            Parent = BloodContainer,
         })
     end
     
@@ -5987,40 +5988,40 @@ function Library:AddSnowEffect(Parent: GuiObject, SnowCount: number?, SnowSize: 
         BackgroundTransparency = 1,
         Size = UDim2.fromScale(1, 1),
         ClipsDescendants = true,
-        Parent = SnowContainer,
+        Parent = BloodContainer,
     })
 
-    local SnowflakeIcon = Library:GetSnowflakeIcon()
-    local HasSnowflakeIcon = SnowflakeIcon and SnowflakeIcon.Url ~= ""
+    local BloodIcon = Library:GetBloodIcon()
+    local HasBloodIcon = BloodIcon and BloodIcon.Url ~= ""
     
     local function updateContainerBounds()
         return {
-            X = SnowContainer.AbsolutePosition.X,
-            Y = SnowContainer.AbsolutePosition.Y,
-            Width = SnowContainer.AbsoluteSize.X,
-            Height = SnowContainer.AbsoluteSize.Y
+            X = BloodContainer.AbsolutePosition.X,
+            Y = BloodContainer.AbsolutePosition.Y,
+            Width = BloodContainer.AbsoluteSize.X,
+            Height = BloodContainer.AbsoluteSize.Y
         }
     end
     
     local containerBounds = updateContainerBounds()
 
-    for i = 1, SnowCount do
-        local Snowflake
+    for i = 1, BloodCount do
+        local BloodDrop
         
         local startX = math.random()
         local startY = -0.05 * math.random()
         local pixelX = startX * containerBounds.Width
         local pixelY = startY * containerBounds.Height
         
-        if HasSnowflakeIcon then
+        if HasBloodIcon then
             Snowflake = New("ImageLabel", {
-                Image = SnowflakeIcon.Url,
+                Image = BloodIcon.Url,
                 ImageColor3 = Color,
-                ImageRectOffset = SnowflakeIcon.ImageRectOffset,
-                ImageRectSize = SnowflakeIcon.ImageRectSize,
+                ImageRectOffset = BloodIcon.ImageRectOffset,
+                ImageRectSize = BloodIcon.ImageRectSize,
                 ImageTransparency = 0.2 + math.random() * 0.4,
                 BackgroundTransparency = 1,
-                Size = UDim2.fromOffset(SnowSize, SnowSize),
+                Size = UDim2.fromOffset(BloodSize, BloodSize),
                 Rotation = math.random(0, 360),
                 Position = UDim2.new(0, pixelX, 0, pixelY),
                 AnchorPoint = Vector2.new(0.5, 0.5),
@@ -6031,7 +6032,7 @@ function Library:AddSnowEffect(Parent: GuiObject, SnowCount: number?, SnowSize: 
             Snowflake = New("Frame", {
                 BackgroundColor3 = Color,
                 BackgroundTransparency = 0.3,
-                Size = UDim2.fromOffset(SnowSize/2, SnowSize/2),
+                Size = UDim2.fromOffset(BloodSize/2, BloodSize/2),
                 Rotation = 45,
                 Position = UDim2.new(0, pixelX, 0, pixelY),
                 AnchorPoint = Vector2.new(0.5, 0.5),
@@ -6049,21 +6050,21 @@ function Library:AddSnowEffect(Parent: GuiObject, SnowCount: number?, SnowSize: 
             Y = startY,
             Speed = Speed * (0.4 + math.random() * 0.6),
             Drift = (math.random() - 0.5) * 0.02,
-            Size = SnowSize,
+            Size = BloodSize,
             RotationSpeed = (math.random() - 0.5) * 60,
             Transparency = 0.2 + math.random() * 0.4,
             WobblePhase = math.random() * math.pi * 2,
             WobbleAmount = math.random() * 0.01,
             Scale = 0.8 + math.random() * 0.4,
-            HalfSize = SnowSize / 2,
+            HalfSize = BloodSize / 2,
         }
 
-        if HasSnowflakeIcon then
+        if HasBloodIcon then
             local Glow = New("ImageLabel", {
-                Image = SnowflakeIcon.Url,
+                Image = BloodIcon.Url,
                 ImageColor3 = Color3.fromRGB(200, 230, 255),
-                ImageRectOffset = SnowflakeIcon.ImageRectOffset,
-                ImageRectSize = SnowflakeIcon.ImageRectSize,
+                ImageRectOffset = BloodIcon.ImageRectOffset,
+                ImageRectSize = BloodIcon.ImageRectSize,
                 ImageTransparency = Data.Transparency + 0.3,
                 BackgroundTransparency = 1,
                 Size = UDim2.new(1.3, 0, 1.3, 0),
@@ -6074,11 +6075,11 @@ function Library:AddSnowEffect(Parent: GuiObject, SnowCount: number?, SnowSize: 
             })
         end
 
-        table.insert(Snowflakes, { Instance = Snowflake, Data = Data })
+        table.insert(BloodDrops, { Instance = Snowflake, Data = Data })
     end
 
     local Connection = RunService.RenderStepped:Connect(function(delta)
-        if not SnowContainer.Parent or not Parent then
+        if not BloodContainer.Parent or not Parent then
             Connection:Disconnect()
             return
         end
@@ -6086,9 +6087,9 @@ function Library:AddSnowEffect(Parent: GuiObject, SnowCount: number?, SnowSize: 
         containerBounds = updateContainerBounds()
         local currentTime = tick()
 
-        for _, Snow in ipairs(Snowflakes) do
-            local Data = Snow.Data
-            local Instance = Snow.Instance
+        for _, Snow in ipairs(BloodDrops) do
+            local Data = Drop.Data
+            local Instance = Drop.Instance
 
             Data.Y = Data.Y + Data.Speed * delta * 0.5
             Data.X = Data.X + Data.Drift * delta
@@ -6135,7 +6136,7 @@ function Library:AddSnowEffect(Parent: GuiObject, SnowCount: number?, SnowSize: 
     
     local ResizeConnection = Parent:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
         containerBounds = updateContainerBounds()
-        SnowContainer.Size = UDim2.fromScale(1, 1)
+        BloodContainer.Size = UDim2.fromScale(1, 1)
         ClipFrame.Size = UDim2.fromScale(1, 1)
     end)
     
@@ -6146,10 +6147,10 @@ function Library:AddSnowEffect(Parent: GuiObject, SnowCount: number?, SnowSize: 
     local CornerConnection
     if Parent:FindFirstChild("UICorner") then
         local parentCorner = Parent.UICorner
-        local snowCorner = SnowContainer:FindFirstChild("UICorner")
-        if snowCorner then
+        local bloodCorner = BloodContainer:FindFirstChild("UICorner")
+        if bloodCorner then
             CornerConnection = parentCorner:GetPropertyChangedSignal("CornerRadius"):Connect(function()
-                snowCorner.CornerRadius = parentCorner.CornerRadius
+                bloodCorner.CornerRadius = parentCorner.CornerRadius
             end)
         end
     end
@@ -6167,23 +6168,23 @@ function Library:AddSnowEffect(Parent: GuiObject, SnowCount: number?, SnowSize: 
             if ResizeConnection then ResizeConnection:Disconnect() end
             if PositionConnection then PositionConnection:Disconnect() end
             if CornerConnection then CornerConnection:Disconnect() end
-            SnowContainer:Destroy()
+            BloodContainer:Destroy()
         end,
         SetVisible = function(visible)
-            SnowContainer.Visible = visible
+            BloodContainer.Visible = visible
         end,
         SetIntensity = function(intensity)
-            for _, Snow in ipairs(Snowflakes) do
+            for _, Snow in ipairs(BloodDrops) do
                 Snow.Data.Transparency = 0.2 + (1 - intensity) * 0.6
             end
         end,
         SetSpeed = function(newSpeed)
             Speed = newSpeed
-            for _, Snow in ipairs(Snowflakes) do
+            for _, Snow in ipairs(BloodDrops) do
                 Snow.Data.Speed = Speed * (0.4 + math.random() * 0.6)
             end
         end,
-        Container = SnowContainer
+        Container = BloodContainer
     }
 end
 function Library:CreateWindow(WindowInfo)
@@ -6273,7 +6274,7 @@ function Library:CreateWindow(WindowInfo)
     local MoveReservedWidth = (MoveIcon and 28 + 10) or 0
 
     local SidebarDrag = {
-        Active = true,
+        Active = false,
         StartWidth = 0,
         StartX = 0,
         TouchId = nil,
@@ -6499,7 +6500,7 @@ function Library:CreateWindow(WindowInfo)
             Size = UDim2.new(1, 0, 0, 48),
             Parent = MainFrame,
         })
-        Library:MakeDraggable(MainFrame, TopBar, true, true)
+        Library:MakeDraggable(MainFrame, TopBar, false, true)
 
         --// Title
         local TitleHolder = New("Frame", {
@@ -6625,7 +6626,7 @@ function Library:CreateWindow(WindowInfo)
 
         SearchBox = New("TextBox", {
             BackgroundColor3 = "MainColor",
-            PlaceholderText = "搜索",
+            PlaceholderText = "Search",
             Size = WindowInfo.SearchbarSize,
             TextScaled = true,
             Visible = not (WindowInfo.DisableSearch or false),
@@ -6767,9 +6768,11 @@ function Library:CreateWindow(WindowInfo)
         
         
         
-       --// Player Info Frame \\--
-local PlayerInfoFrame = New("Frame", {
-    BackgroundTransparency = 1,
+
+--// Quick Actions Frame \\--
+local QuickActionsFrame = New("Frame", {
+    BackgroundTransparency = 0,
+    BackgroundColor3 = "BackgroundColor",
     Size = UDim2.new(0.3, 0, 0, 40),
     AnchorPoint = Vector2.new(0, 1),
     Position = UDim2.new(0, 0, 1, -21),
@@ -6778,29 +6781,86 @@ local PlayerInfoFrame = New("Frame", {
 })
 New("UICorner", {
     CornerRadius = UDim.new(0, Library.CornerRadius - 1),
-    Parent = PlayerInfoFrame,
+    Parent = QuickActionsFrame,
 })
 
-local YearLabel = New("TextLabel", {
+-- 按钮容器
+local ButtonsContainer = New("Frame", {
     BackgroundTransparency = 1,
     Size = UDim2.new(1, 0, 1, 0),
-    Text = "2026·马年快乐",
-    Font = Enum.Font.GothamBold,
-    TextSize = 14,
-    TextColor3 = Color3.fromRGB(220, 53, 69), -- 春节红色
-    TextXAlignment = Enum.TextXAlignment.Center,
-    TextYAlignment = Enum.TextYAlignment.Center,
-    ZIndex = 3,
-    Parent = PlayerInfoFrame,
+    Parent = QuickActionsFrame,
 })
 
-Tabs.UIListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-    local marginBottom = 40
-    Tabs.CanvasSize = UDim2.new(0, 0, 0, Tabs.UIListLayout.AbsoluteContentSize.Y + marginBottom)
-end)
+local UIListLayout = New("UIListLayout", {
+    Parent = ButtonsContainer,
+    FillDirection = Enum.FillDirection.Horizontal,
+    HorizontalAlignment = Enum.HorizontalAlignment.Center,
+    VerticalAlignment = Enum.VerticalAlignment.Center,
+    Padding = UDim.new(0, 8),
+})
 
-local marginBottom = 40
-Tabs.CanvasSize = UDim2.new(0, 0, 0, Tabs.UIListLayout.AbsoluteContentSize.Y + marginBottom)
+-- 快捷按钮
+local quickActions = {
+    {icon = "🔒", tooltip = "锁定界面", callback = function()
+        -- 锁定界面功能
+        print("界面已锁定")
+    end},
+    {icon = "📸", tooltip = "截图", callback = function()
+        -- 截图功能
+        print("截图保存")
+    end},
+    {icon = "⚙️", tooltip = "设置", callback = function()
+        -- 打开设置
+        print("打开设置")
+    end},
+    {icon = "❓", tooltip = "帮助", callback = function()
+        -- 显示帮助
+        print("显示帮助")
+    end},
+    {icon = "⏰", tooltip = "计时器", callback = function()
+        -- 计时器功能
+        print("启动计时器")
+    end}
+}
+
+for i, action in ipairs(quickActions) do
+    local Button = New("TextButton", {
+        Size = UDim2.fromOffset(32, 32),
+        BackgroundTransparency = 0.8,
+        BackgroundColor3 = Color3.fromRGB(60, 60, 60),
+        Text = action.icon,
+        TextSize = 16,
+        TextColor3 = Color3.fromRGB(255, 255, 255),
+        Parent = ButtonsContainer,
+    })
+    
+    New("UICorner", {
+        CornerRadius = UDim.new(1, 0),
+        Parent = Button,
+    })
+    
+    -- 悬停效果
+    Button.MouseEnter:Connect(function()
+        game.TweenService:Create(Button, TweenInfo.new(0.2), {
+            BackgroundTransparency = 0.5,
+            Size = UDim2.fromOffset(34, 34)
+        }):Play()
+    end)
+    
+    Button.MouseLeave:Connect(function()
+        game.TweenService:Create(Button, TweenInfo.new(0.2), {
+            BackgroundTransparency = 0.8,
+            Size = UDim2.fromOffset(32, 32)
+        }):Play()
+    end)
+    
+    -- 点击事件
+    Button.MouseButton1Click:Connect(action.callback)
+end
+
+        
+        
+        
         
 
         --// Container \\--
@@ -8007,7 +8067,7 @@ Tabs.CanvasSize = UDim2.new(0, 0, 0, Tabs.UIListLayout.AbsoluteContentSize.Y + m
     end
 
     if Library.IsMobile then
-        local ToggleButton = Library:AddDraggableButton("☾开关☽", function()
+        local ToggleButton = Library:AddDraggableButton("显示/隐藏", function()
             Library:Toggle()
         end)
 
