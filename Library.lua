@@ -8059,14 +8059,59 @@ Tabs.CanvasSize = UDim2.new(0, 0, 0, Tabs.UIListLayout.AbsoluteContentSize.Y + m
         Library.IsRobloxFocused = false
     end))
     
-    local BackgroundContainer = New("Frame", {
-        BackgroundTransparency = 0.3,
-        BackgroundColor3 = Library.Scheme.BackgroundColor,
-        Size = UDim2.fromScale(1, 1),
+    --// 深色波纹背景图（放在最底层）
+if WindowInfo.BackgroundImage then
+    -- 背景图容器（放最底层）
+    local BgContainer = New("Frame", {
         Position = UDim2.fromScale(0, 0),
+        Size = UDim2.fromScale(1, 1),
+        BackgroundTransparency = 1,
+        ZIndex = 0,  -- 确保在最底层
         Parent = MainFrame,
-        ZIndex = 0,
     })
+    
+    -- 实际背景图 - 深色波纹
+    local BgImage = New("ImageLabel", {
+        Image = WindowInfo.BackgroundImage,
+        Position = UDim2.fromScale(0, 0),
+        Size = UDim2.fromScale(1, 1),
+        ScaleType = Enum.ScaleType.Crop,  -- 保持比例，裁剪填充
+        BackgroundTransparency = 1,
+        ImageTransparency = 0.1,  -- 轻微透明（波纹图本身很暗）
+        ImageColor3 = Color3.fromRGB(200, 200, 200),  -- 轻微降饱和度
+        Parent = BgContainer,
+    })
+    
+    -- 暗色遮罩层 - 比之前的更轻，因为波纹图本身够暗
+    New("Frame", {
+        Position = UDim2.fromScale(0, 0),
+        Size = UDim2.fromScale(1, 1),
+        BackgroundColor3 = Color3.fromRGB(0, 0, 0),
+        BackgroundTransparency = 0.4,  -- 40%黑色遮罩
+        ZIndex = 1,
+        Parent = BgContainer,
+    })
+    
+    -- 可选：添加轻微的颜色叠加，让整体偏冷色调（配合雪花）
+    New("Frame", {
+        Position = UDim2.fromScale(0, 0),
+        Size = UDim2.fromScale(1, 1),
+        BackgroundColor3 = Color3.fromRGB(15, 25, 45),  -- 深蓝紫色调
+        BackgroundTransparency = 0.75,  -- 很淡的色调叠加
+        ZIndex = 2,
+        Parent = BgContainer,
+    })
+end
+
+--// 雪花效果容器（在背景之上，但在UI之下）
+local BackgroundContainer = New("Frame", {
+    BackgroundTransparency = 0.25,  -- 轻微背景色
+    BackgroundColor3 = Library.Scheme.BackgroundColor,
+    Size = UDim2.fromScale(1, 1),
+    Position = UDim2.fromScale(0, 0),
+    Parent = MainFrame,
+    ZIndex = 3,  -- 在背景图之上（背景是0-2）
+})
     
     local SnowEffect = Library:AddSnowEffect(BackgroundContainer, 40, 10, 0.7)
     
