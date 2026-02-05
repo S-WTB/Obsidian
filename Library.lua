@@ -8059,57 +8059,27 @@ Tabs.CanvasSize = UDim2.new(0, 0, 0, Tabs.UIListLayout.AbsoluteContentSize.Y + m
         Library.IsRobloxFocused = false
     end))
     
---// 深色波纹背景图（放在最底层）
+-- 极简版本 - 只放背景图，没有任何遮罩
 if WindowInfo.BackgroundImage then
-    -- 背景图容器（放最底层）
-    local BgContainer = New("Frame", {
-        Position = UDim2.fromScale(0, 0),
-        Size = UDim2.fromScale(1, 1),
-        BackgroundTransparency = 1,
-        ZIndex = 0,
-        Parent = MainFrame,
-    })
-    
-    -- 实际背景图 - 提高亮度，几乎不透明
-    local BgImage = New("ImageLabel", {
+    New("ImageLabel", {
         Image = WindowInfo.BackgroundImage,
         Position = UDim2.fromScale(0, 0),
         Size = UDim2.fromScale(1, 1),
         ScaleType = Enum.ScaleType.Crop,
         BackgroundTransparency = 1,
-        ImageTransparency = 0.0,  -- 完全不透明（原图亮度足够）
-        ImageColor3 = Color3.fromRGB(255, 255, 255),  -- 原图颜色，不调暗
-        Parent = BgContainer,
-    })
-    
-    -- 轻微暗角遮罩 - 只在边缘有点暗，中间保持清晰
-    New("Frame", {
-        Position = UDim2.fromScale(0, 0),
-        Size = UDim2.fromScale(1, 1),
-        BackgroundColor3 = Color3.fromRGB(0, 0, 0),
-        BackgroundTransparency = 0.7,  -- 70%透明，几乎不影响
-        ZIndex = 1,
-        Parent = BgContainer,
-    })
-    
-    -- 可选：轻微冷色调（淡到几乎看不见）
-    New("Frame", {
-        Position = UDim2.fromScale(0, 0),
-        Size = UDim2.fromScale(1, 1),
-        BackgroundColor3 = Color3.fromRGB(30, 40, 60),
-        BackgroundTransparency = 0.9,  -- 90%透明
-        ZIndex = 2,
-        Parent = BgContainer,
+        ImageTransparency = 5,  -- 原图亮度
+        ZIndex = 0,
+        Parent = MainFrame,
     })
 end
 
---// 雪花效果容器（背景之上）
+-- 雪花容器透明
 local BackgroundContainer = New("Frame", {
-    BackgroundTransparency = 1,  -- 完全透明，不遮挡背景图
+    BackgroundTransparency = 1,
     Size = UDim2.fromScale(1, 1),
     Position = UDim2.fromScale(0, 0),
     Parent = MainFrame,
-    ZIndex = 3,
+    ZIndex = 1,
 })
 
     
