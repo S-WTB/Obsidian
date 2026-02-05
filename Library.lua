@@ -5960,10 +5960,10 @@ function Library:Notify(...)
 end
 
 function Library:AddSnowEffect(Parent: GuiObject, SnowCount: number?, SnowSize: number?, Speed: number?, Color: Color3?)
-    SnowCount = SnowCount or 80 
+    SnowCount = SnowCount or 8
     SnowSize = SnowSize or 12
-    Speed = Speed or 1
-    Color = Color or Color3.fromRGB(102, 0, 0)
+    Speed = Speed or 1.5
+    Color = Color or Color3.fromRGB(240, 248, 255)
 
     local Snowflakes = {}
     
