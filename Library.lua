@@ -8059,28 +8059,14 @@ Tabs.CanvasSize = UDim2.new(0, 0, 0, Tabs.UIListLayout.AbsoluteContentSize.Y + m
         Library.IsRobloxFocused = false
     end))
     
--- 极简版本 - 只放背景图，没有任何遮罩
-if WindowInfo.BackgroundImage then
-New("ImageLabel", {
-Image = WindowInfo.BackgroundImage,
-Position = UDim2.fromScale(0, 0),
-Size = UDim2.fromScale(1, 1),
-ScaleType = Enum.ScaleType.Crop,
-BackgroundTransparency = 1,
-ImageTransparency = 2,  -- 原图亮度
-ZIndex = 0,
-Parent = MainFrame,
-})
-end
--- 雪花容器透明
-local BackgroundContainer = New("Frame", {
-BackgroundTransparency = 1,
-Size = UDim2.fromScale(1, 1),
-Position = UDim2.fromScale(0, 0),
-Parent = MainFrame,
-ZIndex = 1,
-})
-
+    local BackgroundContainer = New("Frame", {
+        BackgroundTransparency = 0.3,
+        BackgroundColor3 = Library.Scheme.BackgroundColor,
+        Size = UDim2.fromScale(1, 1),
+        Position = UDim2.fromScale(0, 0),
+        Parent = MainFrame,
+        ZIndex = 0,
+    })
     
     local SnowEffect = Library:AddSnowEffect(BackgroundContainer, 40, 10, 0.7)
     
