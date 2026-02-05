@@ -8067,21 +8067,11 @@ if WindowInfo.BackgroundImage then
         Size = UDim2.fromScale(1, 1),
         ScaleType = Enum.ScaleType.Crop,
         BackgroundTransparency = 1,
-        ImageTransparency = 5,  -- 原图亮度
+        ImageTransparency = 0.5,  -- 原图亮度
         ZIndex = 0,
         Parent = MainFrame,
     })
 end
-
--- 雪花容器透明
-local BackgroundContainer = New("Frame", {
-    BackgroundTransparency = 1,
-    Size = UDim2.fromScale(1, 1),
-    Position = UDim2.fromScale(0, 0),
-    Parent = MainFrame,
-    ZIndex = 1,
-})
-
     
     local SnowEffect = Library:AddSnowEffect(BackgroundContainer, 40, 10, 0.7)
     
